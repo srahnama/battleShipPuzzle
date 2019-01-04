@@ -1,15 +1,17 @@
-    #!/usr/bin/env python3
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import numpy as np
 from scipy import signal
 
 class battleShip:
-    def __init__(self, n, col, row):
+    def __init__(self, n, col, row, populationCounts):
         self.n = n
         #make a Matrix nxn
         self.env = np.zeros((n,n))
         self.col = col
         self.row = row
+        self.populationCounts = populationCounts
+        self.population = {}
         self.all = sum(row)
         # print(self.env, col, row, sum(row))
     #Make a random matrix that have 1 that sums of them equels to sum of ships
@@ -19,31 +21,49 @@ class battleShip:
     # Helper functions
     # These are used as support, but aren't direct GA-specific functions.
     #
-    def isOk(self):
+    def rowColSum(self, matrix):
         #check sum column is equals to number of column
-        # i = 0
-        # self.colSum = []
-        # for num in self.col:
-           
-        #     self.colSum.append(num - sum(self.env[:,i]))
-        #     # print(self.env[:,i])
-        #     i+=1
+        i = 0
+        colSum = []
+        for num in self.col:
+
+            colSum.append(num - sum(matrix[:,i]))
+            # print(self.env[:,i])
+            i+=1
         # print(self.colSum)
         # if(sum(self.colSum) == 0):
         #     print"ok";
         #check sum row is equals to number of row
-        self.rowSum = []
+        rowSum = []
         j = 0
         for num in self.row:
             # print(self.env[j,:])
-            self.rowSum.append(num - sum(self.env[j,:]))
+            rowSum.append(num - sum(matrix[j,:]))
             j+=1
-        print(self.rowSum)
-        if(sum([abs(x) for x in self.rowSum]) == 0):
-            # print("row", num, sum(self.env[j,:]))
-            return True
-        
-        return False 
+        print(rowSum)
+        # if(sum([abs(x) for x in rowSum]) == 0):
+        #     # print("row", num, sum(self.env[j,:]))
+        #     return True
+
+        return rowSum, colSum
+
+    def makeMines(self, matrix, x, y):
+        if(matrix[x+1,y] != 1):
+            matrix[x+1,y] = -1
+        if(matrix[x-1,y] != 1):
+            matrix[x-1,y] = -1
+        if(matrix[x+1,y+1] != 1):
+            matrix[x+1,y+1] = -1
+        if(matrix[x+1,y-1] != 1):
+            matrix[x+1,y-1] = -1
+        if(matrix[x,y-1] != 1):
+            matrix[x,y-1] = -1
+        if(matrix[x,y+1] != 1):
+            matrix[x,y+1] = -1
+        if(matrix[x-1,y+1] != 1):
+            matrix[x-1,y+1] = -1
+        if(matrix[x-1,y-1] != 1):
+            matrix[x-1,y-1] = -1
 
 
     def makeOne(self):
@@ -58,12 +78,14 @@ class battleShip:
             # while(j < self.col[z]):
             self.checkCellNeighbors()
             self.env = matrix
-            if((matrix[x,y] != 1) (matrix[x,y] != -1) ):#and (self.row[x] != 0) and (self.col[y] != 0)):
+            if((matrix[x,y] != 1)  ):#and (self.row[x] != 0) and (self.col[y] != 0)):
                 if(self.cellNeighbors[x,y] == 1):
                     matrix[x,y] = 1
+                    # self.makeMines(matrix, x, y)
                     i+=1
                 elif(self.cellNeighbors[x,y]==0):
                     matrix[x,y] = 1
+                    # self.makeMines(matrix, x, y)
                     i+=1
                 elif(self.cellNeighbors[x,y]==2):
                     if((x == 0 and y == 0) or (x == 0 and y == self.n-1) or (x == self.n-1 and y == self.n-1) or (x == self.n-1 and y == 0)):
@@ -71,33 +93,39 @@ class battleShip:
                     elif(x == 0 and y > 0):
                         if(matrix[x,y-1] + matrix[x,y+1]==2):
                             matrix[x,y] = 1
-                            i+=1    
+                            # self.makeMines(matrix, x, y)
+                            i+=1
                     elif(x > 0 and y == 0):
-                        if(matrix[x-1,y] + matrix[x+1,y] == 2): 
+                        if(matrix[x-1,y] + matrix[x+1,y] == 2):
                             matrix[x,y] = 1
+                            # self.makeMines(matrix, x, y)
                             i+=1
                     elif(x == self.n-1 and y > 0):
                         if(matrix[x,y-1] + matrix[x,y+1]==2):
                             matrix[x,y] = 1
-                            i+=1    
-                    elif(x > 0 and y == self.n-1):
-                        if(matrix[x-1,y] + matrix[x+1,y] == 2): 
-                            matrix[x,y] = 1
                             i+=1
-                    
+                            # self.makeMines(matrix, x, y)
+                    elif(x > 0 and y == self.n-1):
+                        if(matrix[x-1,y] + matrix[x+1,y] == 2):
+                            matrix[x,y] = 1
+                            # self.makeMines(matrix, x, y)
+                            i+=1
+
                     else:
                         if((matrix[x-1,y-1] + matrix[x+1,y+1] == 2) or (matrix[x-1,y+1] + matrix[x+1,y-1] == 2) or (matrix[x-1,y] + matrix[x+1,y] == 2) or (matrix[x,y-1] + matrix[x,y+1] == 2)):
-                            
+
                             matrix[x,y] = 1
+                            # self.makeMines(matrix, x, y)
                             i+=1
                 elif(self.cellNeighbors[x,y] > 2):
                     continue
-                    
-                    
+
+
                 # j+=1
             # i+=1
         print(matrix)
-        print(self.cellNeighbors)
+        print(self.cellNeighbors )
+        return matrix
         self.env = matrix
         # print(matrix[3,3])
 
@@ -117,13 +145,13 @@ class battleShip:
         # f = signal.convolve2d(e, np.ones((2,1)), mode='same')
         # print(f)
 
-        
-        # print(np.ones((2,1)))
+
+                # print(np.ones((2,1)))
         # self.cellNeighbors > 2
         # print(self.cellNeighbors == 2)
         # print(self.cellNeighbors == 3)
         return True
-    
+
     def neighbers(self):
         matrix = self.env
         self.dic= { "row":self.rowSum, "matrix" : matrix}
@@ -142,7 +170,7 @@ class battleShip:
             #         z = 0
             #         while(z < self.colSum[self.rowSum.index(min(i for i in self.rowSum if i != 0))]):
             #             ma
-            
+
             j=0
             while(j< self.n):
                 if(self.rowSum[j] > sum(matrix[j,:]) ):
@@ -152,9 +180,9 @@ class battleShip:
                     print( [ self.row.index(x) for x in self.row if( x < self.row[j]) ])
                 j+=1
             # if(sum([abs(x) for x in self.rowSum]) <  sum([abs(x) for x in self.dic["row"]]) ):
-            #         self.env = matrix 
+            #         self.env = matrix
             #         self.dic["row"] = self.rowSum;
-                    
+
             #         self.dic["matrix"] = self.env;
             #         print(self.dic)
 
@@ -162,11 +190,31 @@ class battleShip:
             if(z==10):
                 break
         print(self.dic)
-        
-row = [2,4,1,1,2,4,1,4]
-col = [3,1,4,1,2,3,0,5]
-bs = battleShip(8, col, row)
-bs.makeOne()
-# bs.chackCellNeighbors()
-# bs.isOk()
-# bs.neighbers()
+
+    def makePopulation(self):
+        for i in range(1, self.populationCounts):
+            myDic = {}
+            matrix = self.makeOne()
+            row = self.rowColSum(matrix)[0]
+            col = self.rowColSum(matrix)[1]
+            myDic= { "matrix": matrix, "row":row, "col": col , "rowSum": sum([ abs(x) for x in row]), "colSum": sum([ abs(x) for x in col])   }
+
+            self.population[i] = myDic
+        print(self.population[1])
+    def fitness(self):
+        print("fitness")
+    def crossOver(self):
+        print("crossOver")
+def main():
+
+    row = [2,4,1,1,2,4,1,4]
+    col = [3,1,4,1,2,3,0,5]
+    populationCounts = 10
+    bs = battleShip(8, col, row, populationCounts)
+    bs.makePopulation()
+    # bs.makeOne()
+    # bs.chackCellNeighbors()
+    # bs.isOk()
+    # bs.neighbers()
+if __name__ == "__main__":
+    main()
