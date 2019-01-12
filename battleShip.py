@@ -2,13 +2,15 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 from scipy import signal
-
+import time
+import random
 class battleShip:
     def __init__(self, n, col, row, populationCounts):
         self.n = n
         #make a Matrix nxn
         self.env = np.zeros((n,n))
         self.col = col
+        self.timeout = time.time() + 5
         self.row = row
         self.populationCounts = populationCounts
         self.population = {}
@@ -47,67 +49,6 @@ class battleShip:
 
         return rowSum, colSum
 
-    def makeMines(self, matrix, x, y, two):
-        if(not two):
-            if(matrix[x+1,y] == 1):
-                matrix[x-1,y] = 2
-            if(matrix[x-1,y] == 1):
-                matrix[x+1,y] = 2
-            if(matrix[x+1,y+1] == 1):
-                matrix[x-1,y-1] = 2
-            if(matrix[x+1,y-1] == 1):
-                matrix[x-1,y+1] = 2
-            if(matrix[x,y-1] == 1):
-                matrix[x,y+1] = 2
-            if(matrix[x,y+1] == 1):
-                matrix[x,y-1] = 2
-            if(matrix[x-1,y+1] == 1):
-                matrix[x+1,y-1] = 2
-            if(matrix[x-1,y-1] == 1):
-                matrix[x+1,y+1] = 2
-        
-
-        if(matrix[x+1,y] == 0):
-            matrix[x+1,y] = -1
-        if(matrix[x-1,y] == 0):
-            matrix[x-1,y] = -1
-        if(matrix[x+1,y+1] == 0):
-            matrix[x+1,y+1] = -1
-        if(matrix[x+1,y-1] == 0):
-            matrix[x+1,y-1] = -1
-        if(matrix[x,y-1] == 0):
-            matrix[x,y-1] = -1
-        if(matrix[x,y+1] == 0):
-            matrix[x,y+1] = -1
-        if(matrix[x-1,y+1] == 0):
-            matrix[x-1,y+1] = -1
-        if(matrix[x-1,y-1] == 0):
-            matrix[x-1,y-1] = -1
-        
-        if(matrix[x+1,y] == 2):
-            matrix[x+1,y] = 0
-        if(matrix[x-1,y] == 2):
-            matrix[x-1,y] = 0
-        if(matrix[x+1,y+1] == 2):
-            matrix[x+1,y+1] = 0
-        if(matrix[x+1,y-1] == 2):
-            matrix[x+1,y-1] = 0
-        if(matrix[x,y-1] == 2):
-            matrix[x,y-1] = 0
-        if(matrix[x,y+1] == 2):
-            matrix[x,y+1] = 0
-        if(matrix[x-1,y+1] == 2):
-            matrix[x-1,y+1] = 0
-        if(matrix[x-1,y-1] == 2):
-            matrix[x-1,y-1] = 0
-        
-    def removeMines(self, matrix):
-        for i in range(0, self.n):
-            for j in range(0, self.n):
-                if(matrix[i,j] == -1):
-                    matrix[i,j] = 0
-        return matrix
-
 
 # 1 1 1 => 1
 # 
@@ -128,19 +69,26 @@ class battleShip:
         matrix = np.zeros((self.n,self.n))
         # matrix neighbors
         matrixN = np.zeros((self.n,self.n))
+        self.timeout = time.time() + 0.5
         while(i < self.all):
-            x= np.random.randint(0,(self.n)-1)
-            y= np.random.randint(0,(self.n)-1)
+            
+            if(time.time() > self.timeout):
+                return matrix, False
+            x= np.random.choice(self.n,1)-1 
+            y= np.random.choice(self.n,1)-1
+            if(x==self.n-1):
+                print(True)
             j = 0
             # print(self.col[z])
             # while(j < self.col[z]):
             self.checkCellNeighbors()
             self.env = matrix
             if((matrix[x,y] != 1)): # and (matrix[x,y] != -1)  ):#and (self.row[x] != 0) and (self.col[y] != 0)):
+                # print(self.cellNeighbors[x,y])
                 if(self.cellNeighbors[x,y] == 1):
                     if(((matrix[x-1,y-1] == 1) and (matrixN[x-1,y-1] == 3 or matrixN[x-1,y-1] == 3)) or ((matrix[x+1,y+1] == 1) and (matrixN[x+1,y+1] == 3 or matrixN[x+1,y+1] == 0))):
                         if(matrix[x-1,y-1] == 1 and matrixN[x-1,y-1] == 0):
-                            matrixN[x-1,y-1][x-1,y-1][x-1,y-1] = 3    
+                            matrixN[x-1,y-1] = 3    
                         elif(matrix[x+1,y+1] == 1 and matrixN[x+1,y+1] == 0):
                             matrixN[x+1,y+1]  = 3
                         matrix[x,y] = 1
@@ -251,6 +199,8 @@ class battleShip:
 
                             # self.makeMines(matrix, x, y)
                             i+=1
+                        else:
+                            continue
                 elif(self.cellNeighbors[x,y] > 2):
                     continue
 
@@ -258,12 +208,12 @@ class battleShip:
                 # j+=1
             # i+=1
         # matrix = self.removeMines(matrix)
-        print(matrix)
-        print(matrixN)
+        # print(matrix)
+        # print(matrixN)
         # print(self.cellNeighbors )
         
         self.env = matrix
-        return matrix
+        return matrix, True
         # print(matrix[3,3])
 
 # sum all neighbors
@@ -330,24 +280,32 @@ class battleShip:
         print(self.dic)
 
     def makePopulation(self):
+        self.population = []
         for i in range(1, self.populationCounts):
             myDic = {}
-            matrix = self.makeOne()
-            row = self.rowColSum(matrix)[0]
-            col = self.rowColSum(matrix)[1]
-            myDic= { "matrix": matrix, "row":row, "col": col , "rowSum": sum([ abs(x) for x in row]), "colSum": sum([ abs(x) for x in col])   }
+            matrix, ok = self.makeOne()
+            if(ok == True   ):
+                row = self.rowColSum(matrix)[0]
+                col = self.rowColSum(matrix)[1]
+                myDic= { "matrix": matrix, "row":row, "col": col , "rowSum": sum([ abs(x) for x in row]), "colSum": sum([ abs(x) for x in col])   }
 
-            self.population[i] = myDic
-        # print(self.population[1])
+                self.population.append(myDic)
+        # print(self.population)
+        print(min(self.population, key=lambda x:x['colSum'] + x['rowSum']))
+        # print(min(self.population, key=lambda x:x['rowSum']))
+        # print(min(self.population[item]['colSum'] + self.population[item]['colSum'] for item in self.population))
+        # print(min(self.population[item]['rowSum'] for item in self.population))
+        # print(self.population[min(self.population, key=self.population.get)])
+         
     def fitness(self):
         print("fitness")
     def crossOver(self):
         print("crossOver")
 def main():
 
-    row = [2,4,1,1,2,4,1,4]
-    col = [3,1,4,1,2,3,0,5]
-    populationCounts = 2
+    col = [2,4,1,1,2,4,1,4]
+    row = [3,1,4,1,2,3,0,5]
+    populationCounts = 100000
     bs = battleShip(8, col, row, populationCounts)
     bs.makePopulation()
     # bs.makeOne()
