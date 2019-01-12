@@ -74,8 +74,8 @@ class battleShip:
             
             if(time.time() > self.timeout):
                 return matrix, False
-            x= np.random.choice(self.n,1)-1 
-            y= np.random.choice(self.n,1)-1
+            x= (np.random.choice(self.n,1)-1)[0] 
+            y= (np.random.choice(self.n,1)-1)[0]
             if(x==self.n-1):
                 print(True)
             j = 0
@@ -83,7 +83,8 @@ class battleShip:
             # while(j < self.col[z]):
             self.checkCellNeighbors()
             self.env = matrix
-            if((matrix[x,y] != 1)): # and (matrix[x,y] != -1)  ):#and (self.row[x] != 0) and (self.col[y] != 0)):
+            # print(x)
+            if((matrix[x,y] != 1) and (self.row[x] != 0) and (self.col[y] != 0)):
                 # print(self.cellNeighbors[x,y])
                 if(self.cellNeighbors[x,y] == 1):
                     if(((matrix[x-1,y-1] == 1) and (matrixN[x-1,y-1] == 3 or matrixN[x-1,y-1] == 3)) or ((matrix[x+1,y+1] == 1) and (matrixN[x+1,y+1] == 3 or matrixN[x+1,y+1] == 0))):
@@ -292,7 +293,8 @@ class battleShip:
                 self.population.append(myDic)
         # print(self.population)
         print(min(self.population, key=lambda x:x['colSum'] + x['rowSum']))
-        # print(min(self.population, key=lambda x:x['rowSum']))
+        print(min(self.population, key=lambda x:x['rowSum']))
+        print(min(self.population, key=lambda x:x['colSum']))
         # print(min(self.population[item]['colSum'] + self.population[item]['colSum'] for item in self.population))
         # print(min(self.population[item]['rowSum'] for item in self.population))
         # print(self.population[min(self.population, key=self.population.get)])
@@ -305,7 +307,7 @@ def main():
 
     col = [2,4,1,1,2,4,1,4]
     row = [3,1,4,1,2,3,0,5]
-    populationCounts = 100000
+    populationCounts = 100
     bs = battleShip(8, col, row, populationCounts)
     bs.makePopulation()
     # bs.makeOne()
