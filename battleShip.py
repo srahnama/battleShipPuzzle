@@ -139,7 +139,10 @@ class battleShip:
             if((matrix[x,y] != 1)): # and (matrix[x,y] != -1)  ):#and (self.row[x] != 0) and (self.col[y] != 0)):
                 if(self.cellNeighbors[x,y] == 1):
                     if(((matrix[x-1,y-1] == 1) and (matrixN[x-1,y-1] == 3 or matrixN[x-1,y-1] == 3)) or ((matrix[x+1,y+1] == 1) and (matrixN[x+1,y+1] == 3 or matrixN[x+1,y+1] == 0))):
-
+                        if(matrix[x-1,y-1] == 1 and matrixN[x-1,y-1] == 0):
+                            matrixN[x-1,y-1][x-1,y-1][x-1,y-1] = 3    
+                        elif(matrix[x+1,y+1] == 1 and matrixN[x+1,y+1] == 0):
+                            matrixN[x+1,y+1]  = 3
                         matrix[x,y] = 1
                         matrixN[x,y] = 3
                         # self.makeMines(matrix, x, y, True)
@@ -147,7 +150,10 @@ class battleShip:
                         # self.makeMines(matrix, x, y)
                         i+=1
                     elif(((matrix[x-1,y+1] == 1 ) and (matrixN[x-1,y+1] == 4 or matrixN[x-1,y+1] == 0)) or ((matrix[x+1,y-1] == 1) and (matrixN[x+1,y-1] == 4 or matrixN[x+1,y-1] == 0))):
-
+                        if(matrix[x-1,y+1] == 1 and matrixN[x-1,y+1] == 0):
+                            matrixN[x-1,y+1] = 4    
+                        elif(matrix[x+1,y-1] == 1 and matrixN[x+1,y-1] == 0):
+                            matrixN[x+1,y-1]  = 4
                         matrix[x,y] = 1
                         matrixN[x,y] = 4
                         # self.makeMines(matrix, x, y, True)
@@ -155,7 +161,10 @@ class battleShip:
                         # self.makeMines(matrix, x, y)
                         i+=1
                     elif(((matrix[x-1,y] == 1) and (matrixN[x-1,y] == 2 or matrixN[x-1,y] == 0)) or ((matrix[x+1,y] == 1) and (matrixN[x+1,y] == 2 or matrixN[x+1,y] == 0))):
-
+                        if(matrix[x-1,y] == 1 and matrixN[x-1,y] == 0):
+                            matrixN[x-1,y] = 2    
+                        elif(matrix[x+1,y] == 1 and matrixN[x+1,y] == 0):
+                            matrixN[x+1,y] = 2
                         matrix[x,y] = 1
                         matrixN[x,y] = 2
                         # self.makeMines(matrix, x, y, True)
@@ -163,7 +172,10 @@ class battleShip:
                         # self.makeMines(matrix, x, y)
                         i+=1
                     elif(((matrix[x,y-1] == 1) and (matrixN[x,y-1] == 1 or matrixN[x,y-1] == 0)) or ((matrix[x,y+1] == 1) and (matrixN[x,y+1] == 1 or matrixN[x,y+1] == 0))):
-
+                        if(matrix[x,y-1] == 1 and matrixN[x,y-1] == 0):
+                            matrixN[x,y-1] = 1   
+                        elif(matrix[x,y+1] == 1 and matrixN[x,y+1] == 0):
+                            matrixN[x,y+1] = 1
                         matrix[x,y] = 1
                         matrixN[x,y] = 1
                         # self.makeMines(matrix, x, y, True)
@@ -175,7 +187,7 @@ class battleShip:
                     matrix[x,y] = 1
                     # self.makeMines(matrix, x, y)
                     i+=1
-                elif(self.cellNeighbors[x,y]==2):
+                elif(self.cellNeighbors[x,y] == 2):
                     if((x == 0 and y == 0) or (x == 0 and y == self.n-1) or (x == self.n-1 and y == self.n-1) or (x == self.n-1 and y == 0)):
                         continue
                     elif(x == 0 and y > 0):
