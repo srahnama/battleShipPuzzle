@@ -4,6 +4,8 @@ import numpy as np
 from scipy import signal
 import time
 import random
+import sys
+
 class battleShip:
     def __init__(self, n, col, row, populationCounts):
         self.n = n
@@ -42,7 +44,7 @@ class battleShip:
             # print(self.env[j,:])
             rowSum.append(num - sum(matrix[j,:]))
             j+=1
-        print(rowSum)
+        # print(rowSum)
         # if(sum([abs(x) for x in rowSum]) == 0):
         #     # print("row", num, sum(self.env[j,:]))
         #     return True
@@ -84,7 +86,7 @@ class battleShip:
             self.checkCellNeighbors()
             self.env = matrix
             # print(x)
-            if((matrix[x,y] != 1) and (self.row[x] != 0) and (self.col[y] != 0)):
+            if((matrix[x,y] != 1) and (self.row[x] != 0) and (self.col[y] != 0) and (self.row[x] > sum(matrix[x,:])) and (self.col[y] > sum(matrix[:,y]))):
                 # print(self.cellNeighbors[x,y])
                 if(self.cellNeighbors[x,y] == 1):
                     if(((matrix[x-1,y-1] == 1) and (matrixN[x-1,y-1] == 3 or matrixN[x-1,y-1] == 3)) or ((matrix[x+1,y+1] == 1) and (matrixN[x+1,y+1] == 3 or matrixN[x+1,y+1] == 0))):
@@ -204,12 +206,13 @@ class battleShip:
                             continue
                 elif(self.cellNeighbors[x,y] > 2):
                     continue
-
+            sys.stdout.write('\r Waiting ')
+            sys.stdout.flush()
 
                 # j+=1
             # i+=1
         # matrix = self.removeMines(matrix)
-        # print(matrix)
+        print(matrix)
         # print(matrixN)
         # print(self.cellNeighbors )
         
@@ -293,8 +296,8 @@ class battleShip:
                 self.population.append(myDic)
         # print(self.population)
         print(min(self.population, key=lambda x:x['colSum'] + x['rowSum']))
-        print(min(self.population, key=lambda x:x['rowSum']))
-        print(min(self.population, key=lambda x:x['colSum']))
+        # print(min(self.population, key=lambda x:x['rowSum']))
+        # print(min(self.population, key=lambda x:x['colSum']))
         # print(min(self.population[item]['colSum'] + self.population[item]['colSum'] for item in self.population))
         # print(min(self.population[item]['rowSum'] for item in self.population))
         # print(self.population[min(self.population, key=self.population.get)])
@@ -303,12 +306,57 @@ class battleShip:
         print("fitness")
     def crossOver(self):
         print("crossOver")
+
+    def bestChoices(self):
+        matrix = np.zeros((self.n,self.n))
+        for i in range(0,self.n):
+            for j in range(0,self.n):
+                matrix[i,j] = ((self.row[i] + self.col[j] + 0.0)/sum(self.row))
+        print(matrix)
+        v = matrix.sum()/(self.n*self.n)
+        print(matrix.sum()/(self.n*self.n))
+        for i in range(0,self.n):
+            for j in range(0,self.n):
+                matrix[i,j] = (matrix[i,j] - v)**2
+        print(matrix)
+        print(matrix.sum()/(self.n*self.n))
+        varians = matrix.sum()/(self.n*self.n)
+        m = np.sqrt(matrix.sum()/(self.n*self.n))
+        print(np.sqrt(matrix.sum()/(self.n*self.n)))
+        c = 0
+        while(c < sum(self.row)):
+            max = matrix.max()
+            for i in range(0,self.n):
+                for j in range(0,self.n):
+                    if(matrix[i,j] == max):
+                        if(self.row[i] != 0 and self.col[j] != 0 and   c < sum(self.row)):
+                            matrix[i,j] = -1
+                            c += 1
+                        else:
+                            matrix[i,j] = -2
+        for i in range(0,self.n):
+            for j in range(0,self.n):
+                if(matrix[i,j] != -1   ):
+                    matrix[i,j] = 0 
+        for i in range(0,self.n):
+            for j in range(0,self.n):
+                if(matrix[i,j] == -1   ):
+                    matrix[i,j] = 1 
+        
+
+        print(matrix)
+        print(matrix.sum())
+        
+
 def main():
 
     col = [2,4,1,1,2,4,1,4]
     row = [3,1,4,1,2,3,0,5]
-    populationCounts = 100
+    populationCounts = 1000
     bs = battleShip(8, col, row, populationCounts)
+    # bs.bestChoices()
+ 
+
     bs.makePopulation()
     # bs.makeOne()
     # bs.chackCellNeighbors()
