@@ -4,8 +4,10 @@ import numpy as np
 from scipy import signal
 import time
 import random
-import sys
-
+# import sys
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+from matplotlib import style
 
 class battleShip:
     def __init__(self, n, col, row, populationCounts):
@@ -517,6 +519,12 @@ class battleShip:
 
     def fitness(self, ):
         matrix1, matrix2 = self.sortPopulation()
+        matMin = matrix1['colSum'] + matrix1['rowSum']
+        print(matrix1['colSum'] + matrix1['rowSum'])
+        matrix1p = matrix1['positions']
+        matrix1 = matrix1['matrix']
+        matrix2 = matrix2['matrix']
+       
         matrix = np.zeros((self.n, self.n))
         matrixP = np.zeros((self.n, self.n))
         for i in range(0, self.n-1):
@@ -524,11 +532,21 @@ class battleShip:
                 if(matrix1[i, j] == matrix2[i, j]):
                     matrix[i, j] = matrix1[i, j]
                     matrixP[i, j] = matrix1p[i, j]
-
+        # print(matrix)
+        #crossOver
+        matrix, matrixP = self.crossOver(matrix, matrixP)
         if(matrix.sum() < sum(self.row)):
-            matrix = self.addOnes(matrix, matrixP)
-        print(matrix)
-        return matrix
+            # print("matrix",matrix.sum())
+            matrix, matrixP, ok = self.addOnes(matrix, matrixP)
+            if(ok == True):
+                row = self.rowColSum(matrix)[0]
+                col = self.rowColSum(matrix)[1]
+                myDic = {"matrix": matrix, "row": row, "col": col, "rowSum": sum([abs(x) for x in row]), "colSum": sum([abs(x) for x in col]),'positions': matrixP}
+                # sum([abs(x) for x in row]) + sum([abs(x) for x in col])
+                self.population.append(myDic)
+        # print(matrix)
+        # return sum([abs(x) for x in row]) + sum([abs(x) for x in col])
+        return matMin
 
     def addOnes(self, matrix, matrixP):
         i = 0
@@ -539,51 +557,52 @@ class battleShip:
         # lessThan4
         matrixS = np.zeros((self.n, self.n))
         self.timeout = time.time() + 0.5
-        while(i < self.all - matrix.sum()):
+        while(matrix.sum() != self.all ):
 
-            if(time.time() > self.timeout):
-                return matrix, False
+            # if(time.time() > self.timeout):
+            #     return matrix, False
             x = (np.random.choice(self.n, 1)-1)[0]
             y = (np.random.choice(self.n, 1)-1)[0]
             if(x == self.n-1):
                 print(True)
             j = 0
-            # print(self.col[z])
+            # print(matrix.sum(), self.all)
             # while(j < self.col[z]):
             self.checkCellNeighbors()
             self.env = matrix
+            
             # print(x)
-            if((matrix[x, y] != 1) and (self.row[x] != 0) and (self.col[y] != 0) and (self.row[x] > sum(matrix[x, :])) and (self.col[y] > sum(matrix[:, y]))):
+            if((matrix[x, y] != 1)):
                 # print(self.cellNeighbors[x,y])
                 if(self.cellNeighbors[x, y] == 1):
 
                     if(((matrix[x-1, y] == 1) and (matrixN[x-1, y] == 2 or matrixN[x-1, y] == 0)) or ((matrix[x+1, y] == 1) and (matrixN[x+1, y] == 2 or matrixN[x+1, y] == 0))):
                         if(matrix[x-1, y] == 1 and matrixN[x-1, y] == 0):
                             matrixN[x-1, y] = 2
-                            matrixS[x-1, y] += 1
+                            # matrixS[x-1, y] += 1
                         elif(matrix[x+1, y] == 1 and matrixN[x+1, y] == 0):
                             matrixN[x+1, y] = 2
-                            matrixS[x+1, y] += 1
+                            # matrixS[x+1, y] += 1
                         matrix[x, y] = 1
                         matrixN[x, y] = 2
-                        matrixS[x, y] += 1
+                        # matrixS[x, y] += 1
 
                         i += 1
                     elif(((matrix[x, y-1] == 1) and (matrixN[x, y-1] == 1 or matrixN[x, y-1] == 0)) or ((matrix[x, y+1] == 1) and (matrixN[x, y+1] == 1 or matrixN[x, y+1] == 0))):
                         if(matrix[x, y-1] == 1 and matrixN[x, y-1] == 0):
                             matrixN[x, y-1] = 1
-                            matrixS[x, y-1] += 1
+                            # matrixS[x, y-1] += 1
                         elif(matrix[x, y+1] == 1 and matrixN[x, y+1] == 0):
                             matrixN[x, y+1] = 1
-                            matrixS[x, y+1] += 1
+                            # matrixS[x, y+1] += 1
                         matrix[x, y] = 1
                         matrixN[x, y] = 1
-                        matrixS[x, y] += 1
+                        # matrixS[x, y] += 1
                         i += 1
 
                 elif(self.cellNeighbors[x, y] == 0):
                     matrix[x, y] = 1
-                    matrixS[x, y] = 1
+                    # matrixS[x, y] = 1
                     i += 1
                 elif(self.cellNeighbors[x, y] == 2):
                     if((x == 0 and y == 0) or (x == 0 and y == self.n-1) or (x == self.n-1 and y == self.n-1) or (x == self.n-1 and y == 0)):
@@ -592,19 +611,19 @@ class battleShip:
                         if((matrix[x, y-1] + matrix[x, y+1] == 2) and (matrixN[x, y-1] == 1) and (matrixN[x, y+1] == 1)):
                             matrix[x, y] = 1
                             matrixN[x, y] = 1
-                            matrixS[x, y] += 2
+                            # matrixS[x, y] += 2
                             i += 1
                     elif(x > 0 and y == 0):
                         if((matrix[x-1, y] + matrix[x+1, y] == 2) and (matrixN[x-1, y] == 2) and (matrixN[x+1, y] == 2)):
                             matrix[x, y] = 1
                             matrixN[x, y] = 2
-                            matrixS[x, y] += 2
+                            # matrixS[x, y] += 2
                             i += 1
                     elif(x == self.n-1 and y > 0):
                         if((matrix[x, y-1] + matrix[x, y+1] == 2) and (matrixN[x, y-1] == 1) and (matrixN[x, y+1] == 1)):
                             matrix[x, y] = 1
                             matrixN[x, y] = 1
-                            matrixS[x, y] += 2
+                            # matrixS[x, y] += 2
                             i += 1
                             # self.makeMines(matrix, x, y, True)
                             # self.makeMines(matrix, x, y)
@@ -612,7 +631,7 @@ class battleShip:
                         if((matrix[x-1, y] + matrix[x+1, y] == 2) and (matrixN[x-1, y] == 2) and (matrix[x+1, y] == 2)):
                             matrix[x, y] = 1
                             matrixN[x, y] = 2
-                            matrixS[x, y] += 2
+                            # matrixS[x, y] += 2
                             i += 1
 
                     else:
@@ -620,33 +639,52 @@ class battleShip:
 
                             matrix[x, y] = 1
                             matrixN[x, y] = 2
-                            matrixS[x, y] += 2
+                            # matrixS[x, y] += 2
                             i += 1
                         elif((matrix[x, y-1] + matrix[x, y+1] == 2) and (matrixN[x, y-1] == 1) and (matrixN[x, y+1] == 1)):
 
                             matrix[x, y] = 1
                             matrixN[x, y] = 1
-                            matrixS[x, y] += 2
+                            # matrixS[x, y] += 2
                             i += 1
                         else:
                             continue
                 elif(self.cellNeighbors[x, y] > 2):
                     continue
-            sys.stdout.write('\r Waiting ')
+            # sys.stdout.write('\r Waiting ')
 
             # j+=1
             # i+=1
         # matrix = self.removeMines(matrix)
-        print(matrix)
-        print(matrixS)
+        # print(matrix)
+        # print(matrixS)
         # print(matrixN)
         # print(self.cellNeighbors )
 
         self.env = matrix
-        return matrix, True
+        return matrix, matrixN, True
 
-    def crossOver(self):
-        print("crossOver")
+    def crossOver(self, matrix, matrixP):
+        c =  (int)(matrix.sum())
+        # print("c," ,c )
+        b = (np.random.choice(c, 1)-1)[0]
+        z = 0
+        for i in range(0, self.n-1):
+            for j in range(0, self.n-1):
+                if(matrix[i, j] == 1):
+                   
+                    if(z == b):
+                        matrix[i, j] = 0
+                        matrixP[i, j] = 0
+                        # print("ok")
+                        break
+                    z+=1
+        # print("crossOver")
+        if(b % 5 == 1):
+            # print("ok")
+            matrix = np.flip(matrix, 0)
+            matrixP = np.flip(matrixP, 0)
+        return matrix, matrixP
 
     def bestChoices(self):
         matrix = np.zeros((self.n, self.n))
@@ -688,6 +726,9 @@ class battleShip:
         print(matrix)
         print(matrix.sum())
 
+style.use('fivethirtyeight')
+fig = plt.figure()
+ax1 = fig.add_subplot(1,1,1)
 
 def main():
     # col = [1,2,1,3,2,2,3,1,5,0]
@@ -695,15 +736,37 @@ def main():
     # populationCounts = 1000
     # bs = battleShip(10, col, row, populationCounts)
 
-    col = [2, 4, 1, 1, 2, 4, 1, 4]
-    row = [3, 1, 4, 1, 2, 3, 0, 5]
+    # col = [2, 4, 1, 1, 2, 4, 1, 4]
+    # row = [3, 1, 4, 1, 2, 3, 0, 5]
+    # populationCounts = 10
+    # bs = battleShip(8, col, row, populationCounts)
+
+
+    
+    col = [2, 4, 1, 1, 2, 4, 1, 4, 3, 1, 4, 1, 2, 3, 0, 5, 2, 4, 10, 1, 2, 24, 1, 4, 3, 1, 4, 1, 2, 3, 0, 5,3, 1, 4, 1, 2, 3, 0, 5, 2, 4, 1, 1, 2, 4, 1, 4, 2, 4, 1, 1, 2, 4, 1, 4, 3, 1, 4, 1, 2, 3, 0, 5,]
+    row = [3, 1, 4, 1, 2, 3, 0, 5, 2, 4, 1, 1, 2, 4, 1, 4, 2, 24, 10, 1, 2, 4, 1, 4, 3, 1, 4, 1, 2, 3, 0, 5, 3, 1, 4, 1, 2, 3, 0, 5, 2, 4, 1, 1, 2, 4, 1, 4, 2, 4, 1, 1, 2, 4, 1, 4, 3, 1, 4, 1, 2, 3, 0, 5,]
+    print(sum(row)==sum(col))
     populationCounts = 10
-    bs = battleShip(8, col, row, populationCounts)
+    bs = battleShip(64, col, row, populationCounts)
 
-    # bs.bestChoices()
+    
     bs.makePopulation()
-
-
+    xs = []
+    ys = []
+    def fit(i):
+        # print(i, argu)
+       
+        # for i in range(100):
+        xs.append(i)
+        ys.append(bs.fitness())
+        # time.sleep(1)
+        ax1.clear()
+        ax1.plot(xs,ys)
+            # plt.grid()
+    
+    anim = animation.FuncAnimation(fig, fit, repeat = True)
+    plt.show()
+    # bs.bestChoices()
     # bs.makeOne()
     # bs.chackCellNeighbors()
     # bs.isOk()
