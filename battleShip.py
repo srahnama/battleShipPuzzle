@@ -8,6 +8,11 @@ import sys
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from matplotlib import style
+import collections
+style.use('fivethirtyeight')
+fig = plt.figure(num=None, figsize=(8, 6), dpi=80, facecolor='w', edgecolor='k')
+fig.set_size_inches(18.5, 10.5, forward=True)
+ax1 = fig.add_subplot(1,1,1)
 np.set_printoptions(threshold=sys.maxsize)
 class battleShip:
     def __init__(self, n, col, row, populationCounts):
@@ -21,12 +26,7 @@ class battleShip:
         self.population = {}
         self.all = sum(row)
         # print(self.env, col, row, sum(row))
-    # Make a random matrix that have 1 that sums of them equels to sum of ships
-
-    #
-    # Helper functions
-    # These are used as support, but aren't direct GA-specific functions.
-    #
+    
 
     def rowColSum(self, matrix):
         # check sum column is equals to number of column
@@ -239,13 +239,14 @@ class battleShip:
         matrix = np.zeros((self.n, self.n))
         # matrix neighbors
         matrixN = np.zeros((self.n, self.n))
-        # lessThan4
-        matrixS = np.zeros((self.n, self.n))
-        self.timeout = time.time() + 0.5
+       
+        self.timeout = time.time() + 1
         while(i < self.all):
 
             if(time.time() > self.timeout):
-                return matrix, False
+                matrix = np.zeros((self.n, self.n))
+                # matrix neighbors
+                matrixN = np.zeros((self.n, self.n))
             x = (np.random.choice(self.n, 1)-1)[0]
             y = (np.random.choice(self.n, 1)-1)[0]
             if(x == self.n-1):
@@ -256,7 +257,7 @@ class battleShip:
             self.checkCellNeighbors()
             self.env = matrix
             # print(x)
-            if((matrix[x, y] != 1) and (self.row[x] != 0) and (self.col[y] != 0)):#and (self.row[x] != 0) and (self.col[y] != 0) and (self.row[x] > sum(matrix[x, :])) and (self.col[y] > sum(matrix[:, y]))):
+            if((matrix[x, y] != 1) and (self.row[x] != 0) and (self.col[y] != 0) and ((self.row[x] > sum(matrix[x, :])) or (self.col[y] > sum(matrix[:, y])))):#and (self.row[x] != 0) and (self.col[y] != 0) and (self.row[x] > sum(matrix[x, :])) and (self.col[y] > sum(matrix[:, y]))):
                 # print(self.cellNeighbors[x,y])
                 if(self.cellNeighbors[x, y] == 1):
                     
@@ -377,12 +378,14 @@ class battleShip:
         self.population = sorted(
             self.population, key=lambda x: x['colSum'] + x['rowSum'])
         i = (np.random.choice(5, 1)-1)[0]
-        j = (np.random.choice(5, 1)-1)[0]
+        j = (np.random.choice(len(self.population), 1)-1)[0]
         min1 = self.population[0]
         min2 = self.population[1]
-        # print(min1)
+        # print(self.population[0]['colSum'] + self.population[0]['rowSum'] )
         # print(min2)
         return min1, min2
+
+   
 
     def lessThan4Neighbors(self, matrix, x, y, myType):
         sum = 1
@@ -434,7 +437,7 @@ class battleShip:
         # matMin = matrix1['colSum'] + matrix1['rowSum']
         if (matrix1['colSum'] + matrix1['rowSum'] == 0):
             print(matrix1)
-        print(matrix1['colSum'] + matrix1['rowSum'])
+        # print(matrix1['colSum'] + matrix1['rowSum'])
         matrix1p = matrix1['positions']
         matrix1 = matrix1['matrix']
         matrix2 = matrix2['matrix']
@@ -443,16 +446,28 @@ class battleShip:
         matrixP = np.zeros((self.n, self.n))
         for i in range(0, self.n-1):
             for j in range(0, self.n-1):
-                if(matrix1[i, j] == matrix2[i, j] ):
+                if(matrix1[i, j] == matrix2[i, j] and bestRow[i] == 0 and bestCol[j] == 0 and bestRow2[i] == 0 and bestCol2[j] == 0):
                     matrix[i, j] = matrix1[i, j]
                     matrixP[i, j] = matrix1p[i, j]
-                if(bestRow[i] == 0  ):
+                    
+                elif(bestRow[i] == 0  ):
                     matrix[i, j] = matrix1[i, j]
                     matrixP[i, j] = matrix1p[i, j]
-                if(bestCol[i] == 0 ):
+                elif(bestCol[j] == 0 ):
                     matrix[j, i] = matrix1[j, i]
                     matrixP[j, i] = matrix1p[j, i]
+               
+        for i in range(0, self.n-1):
+            for j in range(0, self.n-1):
                 
+                if((bestRow[i] != 0) and matrix[i, j] == 1 ):
+                    matrix[i, j] = 0    
+                    matrixP[i, j] = 0
+                    # print("ok"
+                    # break
+                if(bestCol[j] != 0 and matrix[i, j] == 1 ):
+                    matrix[i, j] = 0
+                    matrixP[i, j] = 0 
                     
         
         # print(matrix)
@@ -469,11 +484,22 @@ class battleShip:
                 col = self.rowColSum(matrix)[1]
                 myDic = {"matrix": matrix, "row": row, "col": col, "rowSum": sum([abs(x) for x in row]), "colSum": sum([abs(x) for x in col]),'positions': matrixP}
                 matMin = sum([abs(x) for x in row]) + sum([abs(x) for x in col])
-
+                flag = True
+                # for item in self.population:
+                #     if((item['matrix']==myDic['matrix']).all()):
+                #         print((item['matrix']==myDic['matrix']).all())
+                #         # print(item['matrix'])
+                #         # print(myDic['matrix'])
+                #     # if(item['matrix'] == myDic['matrix']):
+                #         flag = False
+                # if flag:
                 self.population.append(myDic)
-                if(matMin == 10):
+
+                if(matMin == 0):
                     print(matrix)
                     plt.pause(100)
+                if(matMin < 5):
+                    print(matrix)
         # print(matrix)
         # return sum([abs(x) for x in row]) + sum([abs(x) for x in col])
         return matMin
@@ -481,16 +507,19 @@ class battleShip:
     def addOnes(self, matrix, matrixP):
         i = 0
         z = 0
-        matrix = np.zeros((self.n, self.n))
+        matrix = matrix
         # matrix neighbors
         matrixN = matrixP
         # lessThan4
         matrixS = np.zeros((self.n, self.n))
-        self.timeout = time.time() + 0.5
+        self.timeout = time.time() + 5
         while(matrix.sum() != self.all ):
 
-            # if(time.time() > self.timeout):
-            #     return matrix, False
+            if(time.time() > self.timeout):
+                matrix = matrix
+                # matrix neighbors
+                matrixN = matrixP
+                # lessThan4
             x = (np.random.choice(self.n, 1)-1)[0]
             y = (np.random.choice(self.n, 1)-1)[0]
             if(x == self.n-1):
@@ -502,7 +531,7 @@ class battleShip:
             self.env = matrix
             
             # print(x)
-            if((matrix[x, y] != 1)and (self.row[x] != 0) and (self.col[y] != 0) ):#and (self.row[x] != 0) and (self.col[y] != 0) and (self.row[x] > sum(matrix[x, :])) and (self.col[y] > sum(matrix[:, y]))):
+            if((matrix[x, y] != 1)and (self.row[x] != 0) and (self.col[y] != 0) and (self.row[x] != 0) and (self.col[y] != 0) and ((self.row[x] > sum(matrix[x, :])) or (self.col[y] > sum(matrix[:, y])))):#and (self.row[x] != 0) and (self.col[y] != 0) and (self.row[x] > sum(matrix[x, :])) and (self.col[y] > sum(matrix[:, y]))):
                 # print(self.cellNeighbors[x,y])
                 if(self.cellNeighbors[x, y] == 1):
                     
@@ -588,18 +617,9 @@ class battleShip:
     def crossOver(self, matrix, matrixP, bestCol, bestRow, bestColSum, bestRowSum):
         c =  (int)(matrix.sum()) + 1
         # print("c," ,c )
-        b = (np.random.choice(c, 1)-1)[0]
-        z = 0
-        for i in range(0, self.n-1):
-            for j in range(0, self.n-1):
-                if((bestCol[j] == 0 and bestRow[i] == 0) and matrix[i, j] == 1 ):
-                    matrix[i,j] = 0
-                    matrixP[i,j] = 0
-                    # print("ok")
-                    # break
-                # if(bestRow[i] > 0 and matrix[i, j] == 1 ):
-                #     matrix[i, j] = 0
-                #     matrixP[i, j] = 0
+        b = (np.random.choice(100, 1)-1)[0]
+        # z = 0
+        # k = 0
                     # print("ok")
                     # break
                 # if(matrix[i, j] == 1):
@@ -614,14 +634,15 @@ class battleShip:
         # if(b % 5 == 1):
         #     # print("ok")
         # if(bestColSum < bestRowSum):
-        if(b % 5 == 2):
-            matrix = np.flip(matrix, 0)
-            matrixP = np.flip(matrixP, 0)
-        # if(bestColSum > bestRowSum):
         # if(b % 5 == 2):
-        # matrix = np.fliplr(matrix)
-        # matrixP = np.fliplr(matrixP)
-        
+        #     matrix = np.flip(matrix, 0)
+        #     matrixP = np.flip(matrixP, 0)
+        # if(bestColSum > bestRowSum):
+        if(b % 5 == 2):
+            # matrix = np.fliplr(matrix)
+            # matrixP = np.fliplr(matrixP)
+            matrix = matrix[::-1]
+            matrixP = matrixP[::-1]
 
         # matrix = np.roll(matrix, 1)
         # matrixP = np.roll(matrixP, 1)
@@ -700,10 +721,7 @@ class battleShip:
         print(matrix)
         print(matrix.sum())
 
-style.use('fivethirtyeight')
-fig = plt.figure(num=None, figsize=(8, 6), dpi=80, facecolor='w', edgecolor='k')
-fig.set_size_inches(18.5, 10.5, forward=True)
-ax1 = fig.add_subplot(1,1,1)
+
 
 def main():
     # col = [1,2,1,3,2,2,3,1,5,0]
@@ -737,7 +755,7 @@ def main():
     plt.autoscale(False)
     def fit(i):
         # print("ok2")
-
+        
         xs.append(i)
         ys.append(bs.fitness(mutationRate))
         ax1.clear()
