@@ -15,11 +15,12 @@ fig.set_size_inches(18.5, 10.5, forward=True)
 ax1 = fig.add_subplot(1,1,1)
 np.set_printoptions(threshold=sys.maxsize)
 class battleShip:
-    def __init__(self, n, col, row, populationCounts):
+    def __init__(self, n, col, row, populationCounts, mutation):
         self.n = n
         # make a Matrix nxn
         self.env = np.zeros((n, n))
         self.col = col
+        self.mutationRate = mutation
         self.timeout = time.time() + 5
         self.row = row
         self.populationCounts = populationCounts
@@ -247,6 +248,8 @@ class battleShip:
                 matrix = np.zeros((self.n, self.n))
                 # matrix neighbors
                 matrixN = np.zeros((self.n, self.n))
+                self.timeout = time.time() + 5
+                i=0
             x = (np.random.choice(self.n, 1)-1)[0]
             y = (np.random.choice(self.n, 1)-1)[0]
             if(x == self.n-1):
@@ -369,7 +372,7 @@ class battleShip:
                 col = self.rowColSum(matrix)[1]
                 myDic = {"matrix": matrix, "row": row, "col": col, "rowSum": sum(
                     [abs(x) for x in row]), "colSum": sum([abs(x) for x in col]),'positions': matrixP}
-
+                
                 self.population.append(myDic)
         
         self.sortPopulation()
@@ -377,10 +380,11 @@ class battleShip:
     def sortPopulation(self):
         self.population = sorted(
             self.population, key=lambda x: x['colSum'] + x['rowSum'])
-        i = (np.random.choice(5, 1)-1)[0]
-        j = (np.random.choice(len(self.population), 1)-1)[0]
+        i = (np.random.choice(10, 1)-1)[0]
+        j = (np.random.choice(5, 1)-1)[0]
+        # j = (np.random.choice(len(self.population), 1)-1)[0]
         min1 = self.population[0]
-        min2 = self.population[1]
+        min2 = self.population[j]
         # print(self.population[0]['colSum'] + self.population[0]['rowSum'] )
         # print(min2)
         return min1, min2
@@ -446,45 +450,47 @@ class battleShip:
         matrixP = np.zeros((self.n, self.n))
         for i in range(0, self.n-1):
             for j in range(0, self.n-1):
-                if(matrix1[i, j] == matrix2[i, j] and bestRow[i] == 0 and bestCol[j] == 0 and bestRow2[i] == 0 and bestCol2[j] == 0):
+                if(matrix1[i, j] == matrix2[i, j]):#and bestRow[i] == 0 and bestCol[j] == 0 and bestRow2[i] == 0 and bestCol2[j] == 0):
                     matrix[i, j] = matrix1[i, j]
                     matrixP[i, j] = matrix1p[i, j]
                     
-                elif(bestRow[i] == 0  ):
+                elif(bestRow[i] == 0 and bestRow2[i] == 0):
                     matrix[i, j] = matrix1[i, j]
                     matrixP[i, j] = matrix1p[i, j]
-                elif(bestCol[j] == 0 ):
+                elif(bestCol[j] == 0 and bestCol2[j] == 0):
                     matrix[j, i] = matrix1[j, i]
                     matrixP[j, i] = matrix1p[j, i]
                
         for i in range(0, self.n-1):
             for j in range(0, self.n-1):
                 
-                if((bestRow[i] != 0) and matrix[i, j] == 1 ):
+                if((bestRow[i] != 0 and bestRow2[i] != 0) and matrix[i, j] == 1 ):
                     matrix[i, j] = 0    
                     matrixP[i, j] = 0
                     # print("ok"
-                    # break
-                if(bestCol[j] != 0 and matrix[i, j] == 1 ):
+                    
+                if(bestCol[j] != 0 and bestCol2[j] != 0 and matrix[i, j] == 1 ):
                     matrix[i, j] = 0
                     matrixP[i, j] = 0 
+                    
                     
         
         # print(matrix)
         #crossOver
         
-        matrix, matrixP = self.crossOver(matrix, matrixP, bestCol, bestRow, bestColSum, bestRowSum)
+        # matrix, matrixP = self.crossOver(matrix, matrixP, bestCol, bestRow, bestColSum, bestRowSum)
         if(matrix.sum() < sum(self.row)):
             # print("matrix",matrix.sum())
             matrix, matrixP, ok = self.addOnes(matrix, matrixP)
             # matrix, matrixP = self.mutation(matrix, matrixP)
+            matrix, matrixP = self.crossOver(matrix, matrixP)
 
             if(ok == True):
                 row = self.rowColSum(matrix)[0]
                 col = self.rowColSum(matrix)[1]
                 myDic = {"matrix": matrix, "row": row, "col": col, "rowSum": sum([abs(x) for x in row]), "colSum": sum([abs(x) for x in col]),'positions': matrixP}
                 matMin = sum([abs(x) for x in row]) + sum([abs(x) for x in col])
-                flag = True
+                # flag = True
                 # for item in self.population:
                 #     if((item['matrix']==myDic['matrix']).all()):
                 #         print((item['matrix']==myDic['matrix']).all())
@@ -494,12 +500,18 @@ class battleShip:
                 #         flag = False
                 # if flag:
                 self.population.append(myDic)
-
+                # popLen = (int)(len(self.population))
+                # if(  popLen > 20):
+                #     for i in range(19, (popLen-2)):
+                #         del self.population[i]
                 if(matMin == 0):
+                    print("answer is :")
                     print(matrix)
+                    print(matrixP)
                     plt.pause(100)
                 if(matMin < 5):
                     print(matrix)
+                    print(matrixP)
         # print(matrix)
         # return sum([abs(x) for x in row]) + sum([abs(x) for x in col])
         return matMin
@@ -519,6 +531,7 @@ class battleShip:
                 matrix = matrix
                 # matrix neighbors
                 matrixN = matrixP
+                self.timeout = time.time() + 5
                 # lessThan4
             x = (np.random.choice(self.n, 1)-1)[0]
             y = (np.random.choice(self.n, 1)-1)[0]
@@ -614,125 +627,38 @@ class battleShip:
         self.env = matrix
         return matrix, matrixN, True
 
-    def crossOver(self, matrix, matrixP, bestCol, bestRow, bestColSum, bestRowSum):
-        c =  (int)(matrix.sum()) + 1
-        # print("c," ,c )
-        b = (np.random.choice(100, 1)-1)[0]
-        # z = 0
-        # k = 0
-                    # print("ok")
-                    # break
-                # if(matrix[i, j] == 1):
-                   
-                #     if(z == b):
-                #         matrix[i, j] = 0
-                #         matrixP[i, j] = 0
-                #         # print("ok")
-                #         break
-                #     z+=1
-        # # print("crossOver")
-        # if(b % 5 == 1):
-        #     # print("ok")
-        # if(bestColSum < bestRowSum):
-        # if(b % 5 == 2):
-        #     matrix = np.flip(matrix, 0)
-        #     matrixP = np.flip(matrixP, 0)
-        # if(bestColSum > bestRowSum):
-        if(b % 5 == 2):
-            # matrix = np.fliplr(matrix)
-            # matrixP = np.fliplr(matrixP)
-            matrix = matrix[::-1]
-            matrixP = matrixP[::-1]
+    def crossOver(self, matrix, matrixP):
+        # c =  (int)(matrix.sum()) + 1
+        # # print("c," ,c )
+        # b = (np.random.choice(100, 1)-1)[0]
+       
+        if random.randint(0,100) < self.mutationRate:
+            matrix = np.rot90(matrix)
+            matrixP = np.rot90(matrixP)
+            # matrix = matrix[::-1]
+            # matrixP = matrixP[::-1]
+        # if(b % 5 == 3):
+        #     # matrix = np.fliplr(matrix)
+        #     # matrixP = np.fliplr(matrixP)
+        #     matrix = matrix[::-1]
+        #     matrixP = matrixP[::-1]
 
-        # matrix = np.roll(matrix, 1)
-        # matrixP = np.roll(matrixP, 1)
-
-        # if(b % 5 == 2):
-        #     # print("ok")
-        #     # matrix = np.rot90(matrix, 0)
-        #     # matrixP = np.rot90(matrixP, 0)
-        #     matrix = np.flip(matrix, 0)
-        #     matrixP = np.flip(matrixP, 0)
+       
         return matrix, matrixP
-    def mutation(self, matrix, matrixP):
-        c =  (int)(matrix.sum())
-        # print("c," ,c )
-        b = (np.random.choice(c, 1)-1)[0]
-        z = 0
-        # # print("crossOver")
-        # if(b % 5 == 1):
-        #     # print("ok")
-        # if(bestColSum < bestRowSum):
-        # matrix = np.flip(matrix, 0)
-        # matrixP = np.flip(matrixP, 0)
-        # if(bestColSum > bestRowSum):ccccccccccccccc
-        if(b % 5 == 2):
-            matrix = np.fliplr(matrix)
-            matrixP = np.fliplr(matrixP)
-        
-
-        # matrix = np.roll(matrix, 1)
-        # matrixP = np.roll(matrixP, 1)
-
-        # if(b % 5 == 2):
-        #     # print("ok")
-        #     # matrix = np.rot90(matrix, 0)
-        #     # matrixP = np.rot90(matrixP, 0)
-        #     matrix = np.flip(matrix, 0)
-        #     matrixP = np.flip(matrixP, 0)
-        return matrix, matrixP
-    def bestChoices(self):
-        matrix = np.zeros((self.n, self.n))
-        for i in range(0, self.n):
-            for j in range(0, self.n):
-                matrix[i, j] = (
-                    (self.row[i] + self.col[j] + 0.0)/sum(self.row))
-        print(matrix)
-        v = matrix.sum()/(self.n*self.n)
-        print(matrix.sum()/(self.n*self.n))
-        for i in range(0, self.n):
-            for j in range(0, self.n):
-                matrix[i, j] = (matrix[i, j] - v)**2
-        print(matrix)
-        print(matrix.sum()/(self.n*self.n))
-        varians = matrix.sum()/(self.n*self.n)
-        m = np.sqrt(matrix.sum()/(self.n*self.n))
-        print(np.sqrt(matrix.sum()/(self.n*self.n)))
-        c = 0
-        while(c < sum(self.row)):
-            max = matrix.max()
-            for i in range(0, self.n):
-                for j in range(0, self.n):
-                    if(matrix[i, j] == max):
-                        if(self.row[i] != 0 and self.col[j] != 0 and c < sum(self.row)):
-                            matrix[i, j] = -1
-                            c += 1
-                        else:
-                            matrix[i, j] = -2
-        for i in range(0, self.n):
-            for j in range(0, self.n):
-                if(matrix[i, j] != -1):
-                    matrix[i, j] = 0
-        for i in range(0, self.n):
-            for j in range(0, self.n):
-                if(matrix[i, j] == -1):
-                    matrix[i, j] = 1
-
-        print(matrix)
-        print(matrix.sum())
-
-
+   
+   
 
 def main():
+    mutationRate = 3
     # col = [1,2,1,3,2,2,3,1,5,0]
     # row = [3,2,2,4,2,1,1,2,3,0]
     # populationCounts = 1000
-    # bs = battleShip(10, col, row, populationCounts)
-    mutationRate = 0.053
+    # bs = battleShip(10, col, row, populationCounts , mutationRate)
+   
     col = [2, 4, 1, 1, 2, 4, 1, 4]
     row = [3, 1, 4, 1, 2, 3, 0, 5]
-    populationCounts = 1000
-    bs = battleShip(8, col, row, populationCounts)
+    populationCounts = 10
+    bs = battleShip(8, col, row, populationCounts, mutationRate)
 
 
     
@@ -740,8 +666,8 @@ def main():
     # row = [3, 1, 4, 1, 2, 30, 0, 5, 2, 4, 1, 25, 2, 4, 12, 4, 2, 24, 10, 17, 21, 4, 1, 23, 3, 1, 4, 11, 2, 3, 0, 5, 3, 1, 34, 1, 2, 3, 0, 5, 2, 4, 1, 1, 2, 4, 1, 4, 2, 4, 1, 1, 2, 4, 1, 4, 3, 1, 4, 1, 2, 3, 0, 5,]
     # print(sum(row))
     # print(sum(row)==sum(col))
-    # populationCounts = 100
-    # bs = battleShip(64, col, row, populationCounts)
+    # populationCounts = 10
+    # bs = battleShip(64, col, row, populationCounts,mutationRate)
 
     
     bs.makePopulation()
