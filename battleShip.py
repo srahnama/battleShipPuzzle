@@ -523,10 +523,10 @@ class battleShip:
     def sortPopulation(self):
         self.population = sorted(
             self.population, key=lambda x: x['colSum'] + x['rowSum'])
-        i = (np.random.choice(10, 1)-1)[0]
+        # i = (np.random.choice(10, 1)-1)[0]
         # j = (np.random.choice(5, 1)-1)[0]
         j = (np.random.choice(len(self.population), 1)-1)[0]
-        min1 = self.population[i]
+        min1 = self.population[0]
         min2 = self.population[j]
         # print(self.population[0]['colSum'] + self.population[0]['rowSum'] )
         # print(min2)
@@ -563,56 +563,23 @@ class battleShip:
         matrix = np.zeros((self.n, self.n))
         matrixP = np.zeros((self.n, self.n))
 
-        matrix = matrix1
-        matrixP = matrix1p
-        # print(np.zeros((len(matrix))))
-        # print(matrix[(int)(len(matrix)/2),:])
-        matrix[(int)(len(matrix)/2),:] = np.zeros((len(matrix)))
-        matrixP[(int)(len(matrix)/2),:] = np.zeros((len(matrix)))
-        matrix[(int)((len(matrix)/2)+1):,:] = matrix2[((int)(len(matrix2)/2)+1):][:]
-        matrixP[(int)((len(matrix)/2)+1):,:] = matrix2p[((int)(len(matrix2)/2)+1):][:]
+        if(sum([abs(x) for x in bestRow[:(int)(len(matrix)/2)]]) > sum([abs(x) for x in bestRow2[:(int)(len(matrix)/2)]])):
+            matrix = matrix1
+            matrixP = matrix1p        
+            matrix[(int)(len(matrix)/2),:] = np.zeros((len(matrix)))
+            matrixP[(int)(len(matrix)/2),:] = np.zeros((len(matrix)))
+            matrix[(int)((len(matrix)/2)+1):,:] = matrix2[((int)(len(matrix2)/2)+1):][:]
+            matrixP[(int)((len(matrix)/2)+1):,:] = matrix2p[((int)(len(matrix2)/2)+1):][:]
+        else:
+            matrix = matrix2
+            matrixP = matrix2p
+            matrix[(int)(len(matrix)/2),:] = np.zeros((len(matrix)))
+            matrixP[(int)(len(matrix)/2),:] = np.zeros((len(matrix)))
+            matrix[(int)((len(matrix)/2)+1):,:] = matrix1[((int)(len(matrix2)/2)+1):][:]
+            matrixP[(int)((len(matrix)/2)+1):,:] = matrix1p[((int)(len(matrix2)/2)+1):][:]
 
-        # print(matrix)
-        # print(matrix.sum())
-
-        # for i in range(0, self.n-1):
-        #     for j in range(0, self.n-1):
-        #         if(matrix1[i, j] == matrix2[i, j] and bestRow[i] == 0 and bestCol[j] == 0 and bestRow2[i] == 0 and bestCol2[j] == 0):
-        #             matrix[i, j] = matrix1[i, j]
-        #             matrixP[i, j] = matrix1p[i, j]
-                    
-        #         elif(bestRow[i] == 0 and bestRow2[i] == 0):
-        #             matrix[i, j] = matrix1[i, j]
-        #             matrixP[i, j] = matrix1p[i, j]
-        #         elif(bestCol[j] == 0 and bestCol2[j] == 0):
-        #             matrix[i,j] = matrix1[i,j]
-        #             matrixP[i, j] = matrix1p[i,j]
-               
-        # for i in range(0, self.n-1):
-        #     for j in range(0, self.n-1):
-                
-        #         if((bestRow[i] != 0 and bestRow2[i] != 0) and matrix[i, j] == 1 ):
-        #             matrix[i, j] = 0    
-        #             matrixP[i, j] = 0
-        #             # print("ok"
-                    
-        #         if(bestCol[j] != 0 and bestCol2[j] != 0 and matrix[i, j] == 1 ):
-        #             matrix[i, j] = 0
-        #             matrixP[i, j] = 0 
-                    
-                    
-        
-        # print(matrix)
-        # print(matrixP)
-        #crossOver
-        # if(matrix.sum()!= self.all):
         matrix, matrixP = self.crossOver(matrix, matrixP)
-        # matrix, matrixP = self.crossOver(matrix, matrixP, bestCol, bestRow, bestColSum, bestRowSum)
-        # if(matrix.sum() < sum(self.row)):
-            # print("matrix",matrix.sum())
-            
-            # matrix, matrixP, ok = self.addOnes(matrix, matrixP)
-            # matrix, matrixP = self.mutation(matrix, matrixP)
+     
             
 
             # if(ok == True):
@@ -620,23 +587,12 @@ class battleShip:
         col = self.rowColSum(matrix)[1]
         myDic = {"matrix": matrix, "row": row, "col": col, "rowSum": sum([abs(x) for x in row]), "colSum": sum([abs(x) for x in col]),'positions': matrixP}
         matMin = sum([abs(x) for x in row]) + sum([abs(x) for x in col])
-        # flag = True
-        # for item in self.population:
-        #     if((item['matrix']==myDic['matrix']).all()):
-        #         print((item['matrix']==myDic['matrix']).all())
-        #         # print(item['matrix'])
-        #         # print(myDic['matrix'])
-        #     # if(item['matrix'] == myDic['matrix']):
-        #         flag = False
-        # if flag:
+        
         self.population.append(myDic)
         self.sortPopulation()
-        self.population = self.population[:len(self.population)-1]
-        # print(len(self.population))
-        # popLen = (int)(len(self.population))
-        # if(  popLen > 20):
-        #     for i in range(19, (popLen-2)):
-        #         del self.population[i]
+        # if(len(self.population) > 2*self.populationCounts):
+        #     self.population = self.population[:self.n-1]
+        
         if(matMin == 0):
             print("answer is :")
             print(matrix)
@@ -645,8 +601,7 @@ class battleShip:
         if(matMin < 5):
             print(matrix)
             print(matrixP)
-        # print(matrix)
-        # return sum([abs(x) for x in row]) + sum([abs(x) for x in col])
+       
         return matMin
 
     def addOnes(self, matrix1, matrixP1):
