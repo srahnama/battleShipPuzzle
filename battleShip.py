@@ -9,10 +9,13 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from matplotlib import style
 import collections
+from matplotlib.widgets import Button
 style.use('fivethirtyeight')
 fig = plt.figure(num=None, figsize=(8, 6), dpi=80, facecolor='w', edgecolor='k')
 fig.set_size_inches(18.5, 10.5, forward=True)
 ax1 = fig.add_subplot(1,1,1)
+# fig, ax = plt.subplots()
+plt.subplots_adjust(bottom=0.2)
 np.set_printoptions(threshold=sys.maxsize)
 class battleShip:
     def __init__(self, n, col, row, populationCounts, mutation):
@@ -349,48 +352,6 @@ class battleShip:
 
   
 
-
-# sum all neighbors
-
-
-    def checkCellNeighbors(self):
-        matrix = self.env
-        # print(matrix)
-        self.cellNeighbors = signal.convolve2d(
-            matrix, np.ones((3, 3)), mode='same')
-        
-        return True
-
-    
-    def makePopulation(self):
-        self.population = []
-        for i in range(1, self.populationCounts):
-            myDic = {}
-            matrix, matrixP, ok = self.makeOne1()
-            if(ok == True):
-                row = self.rowColSum(matrix)[0]
-                col = self.rowColSum(matrix)[1]
-                myDic = {"matrix": matrix, "row": row, "col": col, "rowSum": sum(
-                    [abs(x) for x in row]), "colSum": sum([abs(x) for x in col]),'positions': matrixP}
-                
-                self.population.append(myDic)
-        
-        self.sortPopulation()
-
-    def sortPopulation(self):
-        self.population = sorted(
-            self.population, key=lambda x: x['colSum'] + x['rowSum'])
-        i = (np.random.choice(10, 1)-1)[0]
-        j = (np.random.choice(5, 1)-1)[0]
-        # j = (np.random.choice(len(self.population), 1)-1)[0]
-        min1 = self.population[0]
-        min2 = self.population[j]
-        # print(self.population[0]['colSum'] + self.population[0]['rowSum'] )
-        # print(min2)
-        return min1, min2
-
-   
-
     def lessThan4Neighbors(self, matrix, x, y, myType):
         sum = 1
         flag1 = True
@@ -421,7 +382,157 @@ class battleShip:
             return False
 
         return True
+    
+    def addOne(self):
+        
+        matrix = np.zeros((self.n, self.n))
+        matrixP = np.zeros((self.n, self.n))
+        self.timeout = time.time() + 5
+        while(matrix.sum() != self.all ):
 
+            if(time.time() > self.timeout):
+                matrix = np.zeros((self.n, self.n))
+                matrixP = np.zeros((self.n, self.n))
+                self.timeout = time.time() + 5
+                # lessThan4
+            x = (np.random.choice(self.n, 1)-1)[0]
+            y = (np.random.choice(self.n, 1)-1)[0]
+            self.env = matrix
+            self.checkCellNeighbors()
+            if((matrix[x, y] != 1)and (self.row[x] != 0) and (self.col[y] != 0)  and ((self.row[x] > sum(matrix[x, :])) or (self.col[y] > sum(matrix[:, y])))):
+                
+                if(self.cellNeighbors[x, y] == 0):
+                    # print("no")
+                    matrix[x,y] = 1
+                    matrixP[x,y] = -1
+                elif(self.cellNeighbors[x, y] == 1):
+                    if((matrix[x+1,y+1] == 1) or (matrix[x-1,y-1] == 1) or (matrix[x+1,y-1] == 1) or (matrix[x-1,y+1] == 1)):
+                        continue
+                    elif(matrix[x+1,y] == 1):
+                        if(matrixP[x+1,y] == 1):
+                            if(self.lessThan4Neighbors(matrix,x+1,y,1)):
+                                matrix[x,y] = 1
+                                matrixP[x,y] = 1
+                        if(matrixP[x+1,y] == -1):
+                            matrix[x,y] = 1
+                            matrixP[x,y] = 1
+                            matrixP[x+1,y] = 1
+                    elif(matrix[x-1,y] == 1):
+                        if(matrixP[x-1,y] == 1):
+                            if(self.lessThan4Neighbors(matrix,x-1,y,1)):
+                                matrix[x,y] = 1
+                                matrixP[x,y] = 1
+                        if(matrixP[x-1,y] == -1):
+                            matrix[x,y] = 1
+                            matrixP[x,y] = 1
+                            matrixP[x-1,y] = 1
+                    elif(matrix[x,y+1] == 1):
+                        if(matrixP[x,y+1] == 2):
+                            if(self.lessThan4Neighbors(matrix,x,y+1,2)):
+                                matrix[x,y] = 1
+                                matrixP[x,y] = 2
+                        if(matrixP[x,y+1] == -1):
+                            matrix[x,y] = 1
+                            matrixP[x,y] = 2
+                            matrixP[x,y+1] = 2
+                    elif(matrix[x,y-1] == 1):
+                        if(matrixP[x,y-1] == 2):
+                            if(self.lessThan4Neighbors(matrix,x,y-1,2)):
+                                matrix[x,y] = 1
+                                matrixP[x,y] = 2
+                        if(matrixP[x,y-1] == -1):
+                            matrix[x,y] = 1
+                            matrixP[x,y] = 2
+                            matrixP[x,y-1] = 2
+                elif(self.cellNeighbors[x, y] == 2):
+                    if((matrix[x+1,y+1] == 1) or (matrix[x-1,y-1] == 1) or (matrix[x-1,y+1] == 1) or (matrix[x+1,y-1] == 1)):
+                        continue
+                    elif((matrix[x+1,y] == 1) and (matrix[x-1,y] == 1)):
+                        if(matrixP[x+1,y] == 1 and matrixP[x-1,y] == 1 ):
+                            if(self.lessThan4Neighbors(matrix,x+1,y,1) and self.lessThan4Neighbors(matrix,x-1,y,1)):
+                                matrix[x,y] = 1
+                                matrixP[x,y] = 1
+                        elif(matrixP[x+1,y] == -1 and matrixP[x-1,y] == 1 ):
+                            if(self.lessThan4Neighbors(matrix,x+1,y,1) and self.lessThan4Neighbors(matrix,x-1,y,1)):
+                                matrix[x,y] = 1
+                                matrixP[x,y] = 1
+                                matrixP[x+1,y] = 1
+                        elif(matrixP[x+1,y] == 1 and matrixP[x-1,y] == -1 ):
+                            if(self.lessThan4Neighbors(matrix,x+1,y,1) and self.lessThan4Neighbors(matrix,x-1,y,1)):
+                                matrix[x,y] = 1
+                                matrixP[x,y] = 1
+                                matrixP[x-1,y] = 1
+                        elif(matrixP[x+1,y] == -1 and matrixP[x-1,y] == -1 ):
+                            matrix[x,y] = 1
+                            matrixP[x,y] = 1
+                            matrixP[x+1,y] = 1
+                            matrixP[x-1,y] = 1
+                    elif((matrix[x,y+1] == 1) and (matrix[x,y-1] == 1)):
+                        if(matrixP[x,y+1] == 2 and matrixP[x,y-1] == 2 ):
+                            if(self.lessThan4Neighbors(matrix,x,y+1,2) and self.lessThan4Neighbors(matrix,x,y-1,2)):
+                                matrix[x,y] = 1
+                                matrixP[x,y] = 2
+                        elif(matrixP[x,y+1] == -1 and matrixP[x,y-1] == 2 ):
+                            if(self.lessThan4Neighbors(matrix,x,y+1,2) and self.lessThan4Neighbors(matrix,x,y-1,2)):
+                                matrix[x,y] = 1
+                                matrixP[x,y] = 2
+                                matrixP[x,y+1] = 2
+                        elif(matrixP[x,y+1] == 2 and matrixP[x,y-1] == -1 ):
+                            if(self.lessThan4Neighbors(matrix,x,y+1,2) and self.lessThan4Neighbors(matrix,x,y-1,2)):
+                                matrix[x,y] = 1
+                                matrixP[x,y] = 2
+                                matrixP[x,y-1] = 2
+                        elif(matrixP[x,y+1] == -1 and matrixP[x,y-1] == -1 ):
+                            matrix[x,y] = 1
+                            matrixP[x,y] = 2
+                            matrixP[x,y+1] = 2
+                            matrixP[x,y-1] = 2
+                else:
+                    continue
+        return matrix, matrixP, True
+
+
+# sum all neighbors
+
+
+    def checkCellNeighbors(self):
+        matrix = self.env
+        # print(matrix)
+        self.cellNeighbors = signal.convolve2d(
+            matrix, np.ones((3, 3)), mode='same')
+        
+        return True
+
+    
+    def makePopulation(self):
+        self.population = []
+        for i in range(1, self.populationCounts):
+            myDic = {}
+            matrix, matrixP, ok = self.addOne()
+            if(ok == True):
+                row = self.rowColSum(matrix)[0]
+                col = self.rowColSum(matrix)[1]
+                myDic = {"matrix": matrix, "row": row, "col": col, "rowSum": sum(
+                    [abs(x) for x in row]), "colSum": sum([abs(x) for x in col]),'positions': matrixP}
+                
+                self.population.append(myDic)
+        
+        print(self.population)
+        self.sortPopulation()
+
+    def sortPopulation(self):
+        self.population = sorted(
+            self.population, key=lambda x: x['colSum'] + x['rowSum'])
+        i = (np.random.choice(10, 1)-1)[0]
+        # j = (np.random.choice(5, 1)-1)[0]
+        j = (np.random.choice(len(self.population), 1)-1)[0]
+        min1 = self.population[i]
+        min2 = self.population[j]
+        # print(self.population[0]['colSum'] + self.population[0]['rowSum'] )
+        # print(min2)
+        return min1, min2
+
+   
 
     def fitness(self,mutation ):
 
@@ -443,212 +554,298 @@ class battleShip:
             print(matrix1)
         # print(matrix1['colSum'] + matrix1['rowSum'])
         matrix1p = matrix1['positions']
+        matrix2p = matrix2['positions']
         matrix1 = matrix1['matrix']
         matrix2 = matrix2['matrix']
-       
+        
+        
+        
         matrix = np.zeros((self.n, self.n))
         matrixP = np.zeros((self.n, self.n))
-        for i in range(0, self.n-1):
-            for j in range(0, self.n-1):
-                if(matrix1[i, j] == matrix2[i, j]):#and bestRow[i] == 0 and bestCol[j] == 0 and bestRow2[i] == 0 and bestCol2[j] == 0):
-                    matrix[i, j] = matrix1[i, j]
-                    matrixP[i, j] = matrix1p[i, j]
+
+        matrix = matrix1
+        matrixP = matrix1p
+        # print(np.zeros((len(matrix))))
+        # print(matrix[(int)(len(matrix)/2),:])
+        matrix[(int)(len(matrix)/2),:] = np.zeros((len(matrix)))
+        matrixP[(int)(len(matrix)/2),:] = np.zeros((len(matrix)))
+        matrix[(int)((len(matrix)/2)+1):,:] = matrix2[((int)(len(matrix2)/2)+1):][:]
+        matrixP[(int)((len(matrix)/2)+1):,:] = matrix2p[((int)(len(matrix2)/2)+1):][:]
+
+        # print(matrix)
+        # print(matrix.sum())
+
+        # for i in range(0, self.n-1):
+        #     for j in range(0, self.n-1):
+        #         if(matrix1[i, j] == matrix2[i, j] and bestRow[i] == 0 and bestCol[j] == 0 and bestRow2[i] == 0 and bestCol2[j] == 0):
+        #             matrix[i, j] = matrix1[i, j]
+        #             matrixP[i, j] = matrix1p[i, j]
                     
-                elif(bestRow[i] == 0 and bestRow2[i] == 0):
-                    matrix[i, j] = matrix1[i, j]
-                    matrixP[i, j] = matrix1p[i, j]
-                elif(bestCol[j] == 0 and bestCol2[j] == 0):
-                    matrix[j, i] = matrix1[j, i]
-                    matrixP[j, i] = matrix1p[j, i]
+        #         elif(bestRow[i] == 0 and bestRow2[i] == 0):
+        #             matrix[i, j] = matrix1[i, j]
+        #             matrixP[i, j] = matrix1p[i, j]
+        #         elif(bestCol[j] == 0 and bestCol2[j] == 0):
+        #             matrix[i,j] = matrix1[i,j]
+        #             matrixP[i, j] = matrix1p[i,j]
                
-        for i in range(0, self.n-1):
-            for j in range(0, self.n-1):
+        # for i in range(0, self.n-1):
+        #     for j in range(0, self.n-1):
                 
-                if((bestRow[i] != 0 and bestRow2[i] != 0) and matrix[i, j] == 1 ):
-                    matrix[i, j] = 0    
-                    matrixP[i, j] = 0
-                    # print("ok"
+        #         if((bestRow[i] != 0 and bestRow2[i] != 0) and matrix[i, j] == 1 ):
+        #             matrix[i, j] = 0    
+        #             matrixP[i, j] = 0
+        #             # print("ok"
                     
-                if(bestCol[j] != 0 and bestCol2[j] != 0 and matrix[i, j] == 1 ):
-                    matrix[i, j] = 0
-                    matrixP[i, j] = 0 
+        #         if(bestCol[j] != 0 and bestCol2[j] != 0 and matrix[i, j] == 1 ):
+        #             matrix[i, j] = 0
+        #             matrixP[i, j] = 0 
                     
                     
         
         # print(matrix)
+        # print(matrixP)
         #crossOver
-        
+        # if(matrix.sum()!= self.all):
+        matrix, matrixP = self.crossOver(matrix, matrixP)
         # matrix, matrixP = self.crossOver(matrix, matrixP, bestCol, bestRow, bestColSum, bestRowSum)
-        if(matrix.sum() < sum(self.row)):
+        # if(matrix.sum() < sum(self.row)):
             # print("matrix",matrix.sum())
-            matrix, matrixP, ok = self.addOnes(matrix, matrixP)
+            
+            # matrix, matrixP, ok = self.addOnes(matrix, matrixP)
             # matrix, matrixP = self.mutation(matrix, matrixP)
-            matrix, matrixP = self.crossOver(matrix, matrixP)
+            
 
-            if(ok == True):
-                row = self.rowColSum(matrix)[0]
-                col = self.rowColSum(matrix)[1]
-                myDic = {"matrix": matrix, "row": row, "col": col, "rowSum": sum([abs(x) for x in row]), "colSum": sum([abs(x) for x in col]),'positions': matrixP}
-                matMin = sum([abs(x) for x in row]) + sum([abs(x) for x in col])
-                # flag = True
-                # for item in self.population:
-                #     if((item['matrix']==myDic['matrix']).all()):
-                #         print((item['matrix']==myDic['matrix']).all())
-                #         # print(item['matrix'])
-                #         # print(myDic['matrix'])
-                #     # if(item['matrix'] == myDic['matrix']):
-                #         flag = False
-                # if flag:
-                self.population.append(myDic)
-                # popLen = (int)(len(self.population))
-                # if(  popLen > 20):
-                #     for i in range(19, (popLen-2)):
-                #         del self.population[i]
-                if(matMin == 0):
-                    print("answer is :")
-                    print(matrix)
-                    print(matrixP)
-                    plt.pause(100)
-                if(matMin < 5):
-                    print(matrix)
-                    print(matrixP)
+            # if(ok == True):
+        row = self.rowColSum(matrix)[0]
+        col = self.rowColSum(matrix)[1]
+        myDic = {"matrix": matrix, "row": row, "col": col, "rowSum": sum([abs(x) for x in row]), "colSum": sum([abs(x) for x in col]),'positions': matrixP}
+        matMin = sum([abs(x) for x in row]) + sum([abs(x) for x in col])
+        # flag = True
+        # for item in self.population:
+        #     if((item['matrix']==myDic['matrix']).all()):
+        #         print((item['matrix']==myDic['matrix']).all())
+        #         # print(item['matrix'])
+        #         # print(myDic['matrix'])
+        #     # if(item['matrix'] == myDic['matrix']):
+        #         flag = False
+        # if flag:
+        self.population.append(myDic)
+        self.sortPopulation()
+        self.population = self.population[:len(self.population)-1]
+        # print(len(self.population))
+        # popLen = (int)(len(self.population))
+        # if(  popLen > 20):
+        #     for i in range(19, (popLen-2)):
+        #         del self.population[i]
+        if(matMin == 0):
+            print("answer is :")
+            print(matrix)
+            print(matrixP)
+            plt.pause(100)
+        if(matMin < 5):
+            print(matrix)
+            print(matrixP)
         # print(matrix)
         # return sum([abs(x) for x in row]) + sum([abs(x) for x in col])
         return matMin
 
-    def addOnes(self, matrix, matrixP):
-        i = 0
-        z = 0
-        matrix = matrix
+    def addOnes(self, matrix1, matrixP1):
+       
+        matrix = matrix1
         # matrix neighbors
-        matrixN = matrixP
-        # lessThan4
-        matrixS = np.zeros((self.n, self.n))
+        matrixP = matrixP1
         self.timeout = time.time() + 5
+        
         while(matrix.sum() != self.all ):
 
             if(time.time() > self.timeout):
-                matrix = matrix
+                matrix = matrix1
                 # matrix neighbors
-                matrixN = matrixP
+                matrixP = matrixP1
                 self.timeout = time.time() + 5
                 # lessThan4
             x = (np.random.choice(self.n, 1)-1)[0]
             y = (np.random.choice(self.n, 1)-1)[0]
-            if(x == self.n-1):
-                print(True)
-            j = 0
-            # print(matrix.sum(), self.all)
-            # while(j < self.col[z]):
-            self.checkCellNeighbors()
+            # print(x,y)
+            # print(matrix)
             self.env = matrix
-            
-            # print(x)
-            if((matrix[x, y] != 1)and (self.row[x] != 0) and (self.col[y] != 0) and (self.row[x] != 0) and (self.col[y] != 0) and ((self.row[x] > sum(matrix[x, :])) or (self.col[y] > sum(matrix[:, y])))):#and (self.row[x] != 0) and (self.col[y] != 0) and (self.row[x] > sum(matrix[x, :])) and (self.col[y] > sum(matrix[:, y]))):
-                # print(self.cellNeighbors[x,y])
-                if(self.cellNeighbors[x, y] == 1):
-                    
-                    if(((matrix[x-1, y] == 1) and (matrixN[x-1, y] == 2 or matrixN[x-1, y] == 0)) or ((matrix[x+1, y] == 1) and (matrixN[x+1, y] == 2 or matrixN[x+1, y] == 0))):
-                        if(self.lessThan4Neighbors(matrix,x,y,2)):
-                            if(matrix[x-1, y] == 1 and matrixN[x-1, y] == 0):
-                                matrixN[x-1, y] = 2
-                            
-                            elif(matrix[x+1, y] == 1 and matrixN[x+1, y] == 0):
-                                matrixN[x+1, y] = 2
-
-                            matrix[x, y] = 1
-                            matrixN[x, y] = 2
-                            i += 1
-                    elif(((matrix[x, y-1] == 1) and (matrixN[x, y-1] == 1 or matrixN[x, y-1] == 0)) or ((matrix[x, y+1] == 1) and (matrixN[x, y+1] == 1 or matrixN[x, y+1] == 0))):
-                        if(self.lessThan4Neighbors(matrix,x,y,1)):
-
-                            if(matrix[x, y-1] == 1 and matrixN[x, y-1] == 0):
-                                matrixN[x, y-1] = 1
-                            elif(matrix[x, y+1] == 1 and matrixN[x, y+1] == 0):
-                                matrixN[x, y+1] = 1
-                            matrix[x, y] = 1
-                            matrixN[x, y] = 1
-                            i += 1
-
-                elif(self.cellNeighbors[x, y] == 0):
-                    matrix[x, y] = 1
-                    i += 1
-                elif(self.cellNeighbors[x, y] == 2):
-                    if((x == 0 and y == 0) or (x == 0 and y == self.n-1) or (x == self.n-1 and y == self.n-1) or (x == self.n-1 and y == 0)):
+            self.checkCellNeighbors()
+            if((matrix[x, y] != 1) and (self.row[x] != 0) and (self.col[y] != 0)):#  and ((self.row[x] > sum(matrix[x, :])) or (self.col[y] > sum(matrix[:, y])))):
+                
+                if(self.cellNeighbors[x, y] == 0):
+                    matrix[x,y] = 1
+                    matrixP[x,y] = -1
+                elif(self.cellNeighbors[x, y] == 1):
+                    if((matrix[x+1,y+1] == 1) or (matrix[x-1,y-1] == 1) or (matrix[x+1,y-1] == 1) or (matrix[x-1,y+1] == 1)):
                         continue
-                    elif(x == 0 and y > 0):
-                        if(self.lessThan4Neighbors(matrix,x,y,1)):
-
-                            if((matrix[x, y-1] + matrix[x, y+1] == 2) and (matrixN[x, y-1] == 1) and (matrixN[x, y+1] == 1)):
-                                matrix[x, y] = 1
-                                matrixN[x, y] = 1
-                                i += 1
-                    elif(x > 0 and y == 0):
-                        if(self.lessThan4Neighbors(matrix,x,y,2)):
-
-                            if((matrix[x-1, y] + matrix[x+1, y] == 2) and (matrixN[x-1, y] == 2) and (matrixN[x+1, y] == 2)):
-                                matrix[x, y] = 1
-                                matrixN[x, y] = 2
-                                i += 1
-                    elif(x == self.n-1 and y > 0):
-                        if(self.lessThan4Neighbors(matrix,x,y,1)):
-
-                            if((matrix[x, y-1] + matrix[x, y+1] == 2) and (matrixN[x, y-1] == 1) and (matrixN[x, y+1] == 1)):
-                                matrix[x, y] = 1
-                                matrixN[x, y] = 1
-                                i += 1
-                    elif(x > 0 and y == self.n-1):
-                        if(self.lessThan4Neighbors(matrix,x,y,2)):
-
-                            if((matrix[x-1, y] + matrix[x+1, y] == 2) and (matrixN[x-1, y] == 2) and (matrix[x+1, y] == 2)):
-                                matrix[x, y] = 1
-                                matrixN[x, y] = 2
-                                i += 1
-
-                    else:
-                       
-                        if((matrix[x-1, y] + matrix[x+1, y] == 2) and (matrixN[x-1, y] == 2) and (matrixN[x+1, y] == 2)):
-                            if(self.lessThan4Neighbors(matrix,x,y,2)):
-
-                                matrix[x, y] = 1
-                                matrixN[x, y] = 2
-                                i += 1
-                        elif((matrix[x, y-1] + matrix[x, y+1] == 2) and (matrixN[x, y-1] == 1) and (matrixN[x, y+1] == 1)):
-                            if(self.lessThan4Neighbors(matrix,x,y,1)):
-
-                                matrix[x, y] = 1
-                                matrixN[x, y] = 1
-                                i += 1
-                        else:
-                            continue
-                elif(self.cellNeighbors[x, y] > 2):
+                    elif(matrix[x+1,y] == 1):
+                        if(matrixP[x+1,y] == 1):
+                            if(self.lessThan4Neighbors(matrix,x+1,y,1)):
+                                matrix[x,y] = 1
+                                matrixP[x,y] = 1
+                        if(matrixP[x+1,y] == -1):
+                            matrix[x,y] = 1
+                            matrixP[x,y] = 1
+                            matrixP[x+1,y] = 1
+                    elif(matrix[x-1,y] == 1):
+                        if(matrixP[x-1,y] == 1):
+                            if(self.lessThan4Neighbors(matrix,x-1,y,1)):
+                                matrix[x,y] = 1
+                                matrixP[x,y] = 1
+                        if(matrixP[x-1,y] == -1):
+                            matrix[x,y] = 1
+                            matrixP[x,y] = 1
+                            matrixP[x-1,y] = 1
+                    elif(matrix[x,y+1] == 1):
+                        if(matrixP[x,y+1] == 2):
+                            if(self.lessThan4Neighbors(matrix,x,y+1,2)):
+                                matrix[x,y] = 1
+                                matrixP[x,y] = 2
+                        if(matrixP[x,y+1] == -1):
+                            matrix[x,y] = 1
+                            matrixP[x,y] = 2
+                            matrixP[x,y+1] = 2
+                    elif(matrix[x,y-1] == 1):
+                        if(matrixP[x,y-1] == 2):
+                            if(self.lessThan4Neighbors(matrix,x,y-1,2)):
+                                matrix[x,y] = 1
+                                matrixP[x,y] = 2
+                        if(matrixP[x,y-1] == -1):
+                            matrix[x,y] = 1
+                            matrixP[x,y] = 2
+                            matrixP[x,y-1] = 2
+                elif(self.cellNeighbors[x, y] == 2):
+                    if((matrix[x+1,y+1] == 1) or (matrix[x-1,y-1] == 1) or (matrix[x-1,y+1] == 1) or (matrix[x+1,y-1] == 1)):
+                        continue
+                    elif((matrix[x+1,y] == 1) and (matrix[x-1,y] == 1)):
+                        if(matrixP[x+1,y] == 1 and matrixP[x-1,y] == 1 ):
+                            if(self.lessThan4Neighbors(matrix,x+1,y,1) and self.lessThan4Neighbors(matrix,x-1,y,1)):
+                                matrix[x,y] = 1
+                                matrixP[x,y] = 1
+                        elif(matrixP[x+1,y] == -1 and matrixP[x-1,y] == 1 ):
+                            if(self.lessThan4Neighbors(matrix,x+1,y,1) and self.lessThan4Neighbors(matrix,x-1,y,1)):
+                                matrix[x,y] = 1
+                                matrixP[x,y] = 1
+                                matrixP[x+1,y] = 1
+                        elif(matrixP[x+1,y] == 1 and matrixP[x-1,y] == -1 ):
+                            if(self.lessThan4Neighbors(matrix,x+1,y,1) and self.lessThan4Neighbors(matrix,x-1,y,1)):
+                                matrix[x,y] = 1
+                                matrixP[x,y] = 1
+                                matrixP[x-1,y] = 1
+                        elif(matrixP[x+1,y] == -1 and matrixP[x-1,y] == -1 ):
+                            matrix[x,y] = 1
+                            matrixP[x,y] = 1
+                            matrixP[x+1,y] = 1
+                            matrixP[x-1,y] = 1
+                    elif((matrix[x,y+1] == 1) and (matrix[x,y-1] == 1)):
+                        if(matrixP[x,y+1] == 2 and matrixP[x,y-1] == 2 ):
+                            if(self.lessThan4Neighbors(matrix,x,y+1,2) and self.lessThan4Neighbors(matrix,x,y-1,2)):
+                                matrix[x,y] = 1
+                                matrixP[x,y] = 2
+                        elif(matrixP[x,y+1] == -1 and matrixP[x,y-1] == 2 ):
+                            if(self.lessThan4Neighbors(matrix,x,y+1,2) and self.lessThan4Neighbors(matrix,x,y-1,2)):
+                                matrix[x,y] = 1
+                                matrixP[x,y] = 2
+                                matrixP[x,y+1] = 2
+                        elif(matrixP[x,y+1] == 2 and matrixP[x,y-1] == -1 ):
+                            if(self.lessThan4Neighbors(matrix,x,y+1,2) and self.lessThan4Neighbors(matrix,x,y-1,2)):
+                                matrix[x,y] = 1
+                                matrixP[x,y] = 2
+                                matrixP[x,y-1] = 2
+                        elif(matrixP[x,y+1] == -1 and matrixP[x,y-1] == -1 ):
+                            matrix[x,y] = 1
+                            matrixP[x,y] = 2
+                            matrixP[x,y+1] = 2
+                            matrixP[x,y-1] = 2
+                else:
                     continue
+        return matrix, matrixP, True
 
-        self.env = matrix
-        return matrix, matrixN, True
+
 
     def crossOver(self, matrix, matrixP):
         # c =  (int)(matrix.sum()) + 1
         # # print("c," ,c )
         # b = (np.random.choice(100, 1)-1)[0]
-       
-        if random.randint(0,100) < self.mutationRate:
-            matrix = np.rot90(matrix)
-            matrixP = np.rot90(matrixP)
-            # matrix = matrix[::-1]
-            # matrixP = matrixP[::-1]
-        # if(b % 5 == 3):
-        #     # matrix = np.fliplr(matrix)
-        #     # matrixP = np.fliplr(matrixP)
-        #     matrix = matrix[::-1]
-        #     matrixP = matrixP[::-1]
+        if(matrix.sum()<self.all):
+             matrix, matrixP, ok = self.addOnes(matrix, matrixP)
+        else:
+            while(matrix.sum()>self.all-self.row[(int)(len(matrix)/2)]):
+                x = (np.random.choice(self.n, 1)-1)[0]
+                y = (np.random.choice(self.n, 1)-1)[0]
+                if(matrix[x,y] == 1):
+                    matrix[x,y] = 0
+                    matrixP[x,y] = 0
+        matrix, matrixP, ok = self.addOnes(matrix, matrixP)
+        # if(matrix[(int)(len(matrix)/2),:].sum()>0):
+        #     print(matrix)
+        # if random.randint(0,100) < self.mutationRate:
+        #     for i in range(0, self.n-1):
+        #         for j in range(0, self.n-1):
+        #             if(matrix[i, j] == 1):
+        #                 matrix[i, j] = 0
+        #                 matrixP[i, j] = 0
+        #                 break
+        #     # matrix = np.rot90(matrix)
+        #     # matrixP = np.rot90(matrixP)
+        #     # matrix = matrix[::-1]
+        #     # matrixP = matrixP[::-1]
+        # # if(b % 5 == 3):
+        #     matrix = np.fliplr(matrix)
+        #     matrixP = np.fliplr(matrixP)
+        # #     matrix = matrix[::-1]
+        # #     matrixP = matrixP[::-1]
 
-       
+        # print(matrix.sum())
         return matrix, matrixP
+
    
    
+
+# from tkinter import *
 
 def main():
+    # a=np.array([[0., 0., 0., 1., 0., 0., 1., 0.],
+    #    [0., 1., 0., 0., 0., 0., 0., 0.],
+    #    [0., 0., 0., 0., 1., 1., 1., 1.],
+    #    [0., 1., 1., 0., 0., 0., 0., 0.],
+    #    [0., 0., 0., 0., 0., 1., 0., 0.],
+    #    [1., 1., 1., 1., 0., 1., 0., 1.],
+    #    [0., 0., 0., 0., 0., 0., 0., 0.],
+    #    [1., 0., 0., 1., 0., 0., 1., 0.]])
+    
+    # b=np.array([[0., 1., 0., 1., 0., 0., 0., 0.],
+    #    [0., 1., 0., 0., 0., 1., 1., 0.],
+    #    [0., 0., 0., 1., 0., 0., 0., 0.],
+    #    [0., 1., 0., 0., 0., 0., 0., 1.],
+    #    [0., 0., 0., 0., 1., 0., 0., 1.],
+    #    [1., 1., 1., 0., 1., 0., 0., 1.],
+    #    [0., 0., 0., 0., 0., 0., 0., 0.],
+    #    [1., 0., 0., 0., 1., 1., 0., 1.]])
+    # c = b   
+    # c[(int)(len(c)/2),:] = np.zeros((8))
+    # c[(int)(len(c)/2+1):,:] = a[(int)(len(c)/2+1):][:]
+
+    # print(c)
+    # print(c.sum())
+    
+    # for i in range(5,10):
+    #     for j in range(5,10):
+    #         c[]
+
+    # print(np.concatenate(a,b))
+    # # master=Tk()
+    # master.geometry("400x400")
+    # frame1=Frame(master, width=10, height=10, background="Blue")
+    # for i in range(0,10):
+    #     for j in range(0, 10):
+    #         if j == 2 or j == 4:
+    #             frame1.grid(row=i, column=j)
+
+    
+    
+
+
     mutationRate = 3
     # col = [1,2,1,3,2,2,3,1,5,0]
     # row = [3,2,2,4,2,1,1,2,3,0]
@@ -657,7 +854,7 @@ def main():
    
     col = [2, 4, 1, 1, 2, 4, 1, 4]
     row = [3, 1, 4, 1, 2, 3, 0, 5]
-    populationCounts = 10
+    populationCounts = 100
     bs = battleShip(8, col, row, populationCounts, mutationRate)
 
 
@@ -687,8 +884,32 @@ def main():
         ax1.clear()
         ax1.plot(xs,ys)
     # print("ok1")
+
+    def pause( e):
+        anim.event_source.stop()
+
+        print("answer is :")
+        print(bs.population[0]['matrix'])
+        print(bs.population[0]['row'])
+        print(bs.population[0]['rowSum'])
+        print(bs.population[0]['col'])
+        print(bs.population[0]['colSum'])
+        # print(matrixP)
+    def unpause(e ):
+        anim.event_source.start()
+
+        print("answer is :")
+        print(bs.population[0]['matrix'])
+        # print(matrixP)
     anim = animation.FuncAnimation(fig, fit)
+    axpause = plt.axes([0.7, 0.05, 0.1, 0.075])
+    axstart = plt.axes([0.81, 0.05, 0.1, 0.075])
+    bPause = Button(axpause, 'pause')
+    bPause.on_clicked(pause)
+    bstart = Button(axstart, 'start')
+    bstart.on_clicked(unpause)
     plt.show()
+    # master.mainloop()
     # bs.bestChoices()
     # bs.makeOne()
     # bs.chackCellNeighbors()
