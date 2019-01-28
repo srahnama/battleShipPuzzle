@@ -64,320 +64,39 @@ class battleShip:
 # 1
 # 1
 # 1 => 2
-#
-# 1
-#   1
-#     1 => 3
-#
-#       1
-#     1
-#   1 => 4
 
-
-    def makeOne(self):
-        i = 0
-        z = 0
-        matrix = np.zeros((self.n, self.n))
-        # matrix neighbors
-        matrixN = np.zeros((self.n, self.n))
-        self.timeout = time.time() + 0.5
-        while(i < self.all):
-
-            if(time.time() > self.timeout):
-                return matrix, False
-            x = (np.random.choice(self.n, 1)-1)[0]
-            y = (np.random.choice(self.n, 1)-1)[0]
-            if(x == self.n-1):
-                print(True)
-            j = 0
-            # print(self.col[z])
-            # while(j < self.col[z]):
-            self.checkCellNeighbors()
-            self.env = matrix
-            # print(x)
-            # and (self.row[x] > sum(matrix[x,:])) and (self.col[y] > sum(matrix[:,y]))):
-            if((matrix[x, y] != 1) and (self.row[x] != 0) and (self.col[y] != 0)):
-                # print(self.cellNeighbors[x,y])
-                if(self.cellNeighbors[x, y] == 1):
-                    if(((matrix[x-1, y-1] == 1) and (matrixN[x-1, y-1] == 3 or matrixN[x-1, y-1] == 3)) or ((matrix[x+1, y+1] == 1) and (matrixN[x+1, y+1] == 3 or matrixN[x+1, y+1] == 0))):
-                        
-                        if(matrix[x-1, y-1] == 1 and matrixN[x-1, y-1] == 0):
-                            matrixN[x-1, y-1] = 3
-                        elif(matrix[x+1, y+1] == 1 and matrixN[x+1, y+1] == 0):
-                            matrixN[x+1, y+1] = 3
-                        matrix[x, y] = 1
-                        matrixN[x, y] = 3
-                        # self.makeMines(matrix, x, y, True)
-
-                        # self.makeMines(matrix, x, y)
-                        i += 1
-                    elif(((matrix[x-1, y+1] == 1) and (matrixN[x-1, y+1] == 4 or matrixN[x-1, y+1] == 0)) or ((matrix[x+1, y-1] == 1) and (matrixN[x+1, y-1] == 4 or matrixN[x+1, y-1] == 0))):
-                        if(matrix[x-1, y+1] == 1 and matrixN[x-1, y+1] == 0):
-                            matrixN[x-1, y+1] = 4
-                        elif(matrix[x+1, y-1] == 1 and matrixN[x+1, y-1] == 0):
-                            matrixN[x+1, y-1] = 4
-                        matrix[x, y] = 1
-                        matrixN[x, y] = 4
-                        # self.makeMines(matrix, x, y, True)
-
-                        # self.makeMines(matrix, x, y)
-                        i += 1
-                    elif(((matrix[x-1, y] == 1) and (matrixN[x-1, y] == 2 or matrixN[x-1, y] == 0)) or ((matrix[x+1, y] == 1) and (matrixN[x+1, y] == 2 or matrixN[x+1, y] == 0))):
-                        if(matrix[x-1, y] == 1 and matrixN[x-1, y] == 0):
-                            matrixN[x-1, y] = 2
-                        elif(matrix[x+1, y] == 1 and matrixN[x+1, y] == 0):
-                            matrixN[x+1, y] = 2
-                        matrix[x, y] = 1
-                        matrixN[x, y] = 2
-                        # self.makeMines(matrix, x, y, True)
-
-                        # self.makeMines(matrix, x, y)
-                        i += 1
-                    elif(((matrix[x, y-1] == 1) and (matrixN[x, y-1] == 1 or matrixN[x, y-1] == 0)) or ((matrix[x, y+1] == 1) and (matrixN[x, y+1] == 1 or matrixN[x, y+1] == 0))):
-                        if(matrix[x, y-1] == 1 and matrixN[x, y-1] == 0):
-                            matrixN[x, y-1] = 1
-                        elif(matrix[x, y+1] == 1 and matrixN[x, y+1] == 0):
-                            matrixN[x, y+1] = 1
-                        matrix[x, y] = 1
-                        matrixN[x, y] = 1
-                        # self.makeMines(matrix, x, y, True)
-
-                        # self.makeMines(matrix, x, y)
-                        i += 1
-
-                elif(self.cellNeighbors[x, y] == 0):
-                    matrix[x, y] = 1
-                    # self.makeMines(matrix, x, y)
-                    i += 1
-                elif(self.cellNeighbors[x, y] == 2):
-                    if((x == 0 and y == 0) or (x == 0 and y == self.n-1) or (x == self.n-1 and y == self.n-1) or (x == self.n-1 and y == 0)):
-                        continue
-                    elif(x == 0 and y > 0):
-                        if((matrix[x, y-1] + matrix[x, y+1] == 2) and (matrixN[x, y-1] == 1) and (matrixN[x, y+1] == 1)):
-                            matrix[x, y] = 1
-                            matrixN[x, y] = 1
-                            # self.makeMines(matrix, x, y, True)
-                            i += 1
-                    elif(x > 0 and y == 0):
-                        if((matrix[x-1, y] + matrix[x+1, y] == 2) and (matrixN[x-1, y] == 2) and (matrixN[x+1, y] == 2)):
-                            matrix[x, y] = 1
-                            matrixN[x, y] = 2
-                            # self.makeMines(matrix, x, y, True)
-                            # self.makeMines(matrix, x, y)
-                            i += 1
-                    elif(x == self.n-1 and y > 0):
-                        if((matrix[x, y-1] + matrix[x, y+1] == 2) and (matrixN[x, y-1] == 1) and (matrixN[x, y+1] == 1)):
-                            matrix[x, y] = 1
-                            matrixN[x, y] = 1
-                            i += 1
-                            # self.makeMines(matrix, x, y, True)
-                            # self.makeMines(matrix, x, y)
-                    elif(x > 0 and y == self.n-1):
-                        if((matrix[x-1, y] + matrix[x+1, y] == 2) and (matrixN[x-1, y] == 2) and (matrix[x+1, y] == 2)):
-                            matrix[x, y] = 1
-                            matrixN[x, y] = 2
-                            # self.makeMines(matrix, x, y, True)
-                            # self.makeMines(matrix, x, y)
-                            i += 1
-
-                    else:
-                        if((matrix[x-1, y-1] + matrix[x+1, y+1] == 2) and (matrixN[x-1, y-1] == 3) and (matrixN[x+1, y+1] == 3)):
-
-                            matrix[x, y] = 1
-                            matrixN[x, y] = 3
-                            # self.makeMines(matrix, x, y, True)
-
-                            # self.makeMines(matrix, x, y)
-                            i += 1
-                        elif((matrix[x-1, y+1] + matrix[x+1, y-1] == 2) and (matrixN[x-1, y+1] == 4) and (matrixN[x+1, y-1] == 4)):
-
-                            matrix[x, y] = 1
-                            matrixN[x, y] = 4
-                            # self.makeMines(matrix, x, y, True)
-
-                            # self.makeMines(matrix, x, y)
-                            i += 1
-                        elif((matrix[x-1, y] + matrix[x+1, y] == 2) and (matrixN[x-1, y] == 2) and (matrixN[x+1, y] == 2)):
-
-                            matrix[x, y] = 1
-                            matrixN[x, y] = 2
-                            # self.makeMines(matrix, x, y, True)
-
-                            # self.makeMines(matrix, x, y)
-                            i += 1
-                        elif((matrix[x, y-1] + matrix[x, y+1] == 2) and (matrixN[x, y-1] == 1) and (matrixN[x, y+1] == 1)):
-
-                            matrix[x, y] = 1
-                            matrixN[x, y] = 1
-                            # self.makeMines(matrix, x, y, True)
-
-                            # self.makeMines(matrix, x, y)
-                            i += 1
-                        else:
-                            continue
-                elif(self.cellNeighbors[x, y] > 2):
-                    continue
-            # sys.stdout.write('\r Waiting ')
-
-                # j+=1
-            # i+=1
-        # matrix = self.removeMines(matrix)
-        # print(matrix)
-        # print(matrixN)
-        # print(self.cellNeighbors )
-
-        self.env = matrix
-        return matrix, matrixN, True
-        # print(matrix[3,3])
-
-# 1 1 1 => 1
-#
-# 1
-# 1
-# 1 => 2
-#
-
-    def makeOne1(self):
-        i = 0
-        z = 0
-        matrix = np.zeros((self.n, self.n))
-        # matrix neighbors
-        matrixN = np.zeros((self.n, self.n))
-       
-        self.timeout = time.time() + 1
-        while(i < self.all):
-
-            if(time.time() > self.timeout):
-                matrix = np.zeros((self.n, self.n))
-                # matrix neighbors
-                matrixN = np.zeros((self.n, self.n))
-                self.timeout = time.time() + 5
-                i=0
-            x = (np.random.choice(self.n, 1)-1)[0]
-            y = (np.random.choice(self.n, 1)-1)[0]
-            if(x == self.n-1):
-                print(True)
-            j = 0
-            # print(self.col[z])
-            # while(j < self.col[z]):
-            self.checkCellNeighbors()
-            self.env = matrix
-            # print(x)
-            if((matrix[x, y] != 1) and (self.row[x] != 0) and (self.col[y] != 0) and ((self.row[x] > sum(matrix[x, :])) or (self.col[y] > sum(matrix[:, y])))):#and (self.row[x] != 0) and (self.col[y] != 0) and (self.row[x] > sum(matrix[x, :])) and (self.col[y] > sum(matrix[:, y]))):
-                # print(self.cellNeighbors[x,y])
-                if(self.cellNeighbors[x, y] == 1):
-                    
-                    if(((matrix[x-1, y] == 1) and (matrixN[x-1, y] == 2 or matrixN[x-1, y] == 0)) or ((matrix[x+1, y] == 1) and (matrixN[x+1, y] == 2 or matrixN[x+1, y] == 0))):
-                        if(self.lessThan4Neighbors(matrix,x,y,2)):
-                            if(matrix[x-1, y] == 1 and matrixN[x-1, y] == 0):
-                                matrixN[x-1, y] = 2
-                            
-                            elif(matrix[x+1, y] == 1 and matrixN[x+1, y] == 0):
-                                matrixN[x+1, y] = 2
-
-                            matrix[x, y] = 1
-                            matrixN[x, y] = 2
-                            i += 1
-                    elif(((matrix[x, y-1] == 1) and (matrixN[x, y-1] == 1 or matrixN[x, y-1] == 0)) or ((matrix[x, y+1] == 1) and (matrixN[x, y+1] == 1 or matrixN[x, y+1] == 0))):
-                        if(self.lessThan4Neighbors(matrix,x,y,1)):
-
-                            if(matrix[x, y-1] == 1 and matrixN[x, y-1] == 0):
-                                matrixN[x, y-1] = 1
-                            elif(matrix[x, y+1] == 1 and matrixN[x, y+1] == 0):
-                                matrixN[x, y+1] = 1
-                            matrix[x, y] = 1
-                            matrixN[x, y] = 1
-                            i += 1
-
-                elif(self.cellNeighbors[x, y] == 0):
-                    matrix[x, y] = 1
-                    i += 1
-                elif(self.cellNeighbors[x, y] == 2):
-                    if((x == 0 and y == 0) or (x == 0 and y == self.n-1) or (x == self.n-1 and y == self.n-1) or (x == self.n-1 and y == 0)):
-                        continue
-                    elif(x == 0 and y > 0):
-                        if(self.lessThan4Neighbors(matrix,x,y,1)):
-
-                            if((matrix[x, y-1] + matrix[x, y+1] == 2) and (matrixN[x, y-1] == 1) and (matrixN[x, y+1] == 1)):
-                                matrix[x, y] = 1
-                                matrixN[x, y] = 1
-                                i += 1
-                    elif(x > 0 and y == 0):
-                        if(self.lessThan4Neighbors(matrix,x,y,2)):
-
-                            if((matrix[x-1, y] + matrix[x+1, y] == 2) and (matrixN[x-1, y] == 2) and (matrixN[x+1, y] == 2)):
-                                matrix[x, y] = 1
-                                matrixN[x, y] = 2
-                                i += 1
-                    elif(x == self.n-1 and y > 0):
-                        if(self.lessThan4Neighbors(matrix,x,y,1)):
-
-                            if((matrix[x, y-1] + matrix[x, y+1] == 2) and (matrixN[x, y-1] == 1) and (matrixN[x, y+1] == 1)):
-                                matrix[x, y] = 1
-                                matrixN[x, y] = 1
-                                i += 1
-                    elif(x > 0 and y == self.n-1):
-                        if(self.lessThan4Neighbors(matrix,x,y,2)):
-
-                            if((matrix[x-1, y] + matrix[x+1, y] == 2) and (matrixN[x-1, y] == 2) and (matrix[x+1, y] == 2)):
-                                matrix[x, y] = 1
-                                matrixN[x, y] = 2
-                                i += 1
-
-                    else:
-                       
-                        if((matrix[x-1, y] + matrix[x+1, y] == 2) and (matrixN[x-1, y] == 2) and (matrixN[x+1, y] == 2)):
-                            if(self.lessThan4Neighbors(matrix,x,y,2)):
-
-                                matrix[x, y] = 1
-                                matrixN[x, y] = 2
-                                i += 1
-                        elif((matrix[x, y-1] + matrix[x, y+1] == 2) and (matrixN[x, y-1] == 1) and (matrixN[x, y+1] == 1)):
-                            if(self.lessThan4Neighbors(matrix,x,y,1)):
-
-                                matrix[x, y] = 1
-                                matrixN[x, y] = 1
-                                i += 1
-                        else:
-                            continue
-                elif(self.cellNeighbors[x, y] > 2):
-                    continue
-         
-
-        # print(matrix)
-       
-        # self.env = matrix
-        return matrix, matrixN, True
-       
-
-  
 
     def lessThan4Neighbors(self, matrix, x, y, myType):
         sum = 1
         flag1 = True
         flag2 = True
-        for i in range(0, self.n-1):
+        for i in range(0, self.n):
             
-            if(myType == 1 and y+i < self.n):
-                if(matrix[x,y+i] == 1 and flag1):
-                    sum +=1
-                else:
-                    flag1 = False
-                if(matrix[x,y-i] == 1 and flag2):
-                    sum +=1
-                else:
-                    flag2 = False
+            if(myType == 2 ):
+                if(y+i < self.n):
+                    if(matrix[x,y+i] == 1 and flag1):
+                        sum +=1
+                    else:
+                        flag1 = False
+                if(y-i >= 0):
+                
+                    if(matrix[x,y-i] == 1 and flag2):
+                        sum +=1
+                    else:
+                        flag2 = False
 
                 
-            elif(myType == 2 and x+i < self.n ):
-                if(matrix[x+i,y] == 1 and flag1):
-                    sum +=1
-                else:
-                    flag1 = False
-                if(matrix[x-i,y] == 1 and flag2):
-                    sum +=1
-                else:
-                    flag2 = False
+            elif(myType == 1  ):
+                if( x+i < self.n):
+                    if(matrix[x+i,y] == 1 and flag1):
+                        sum +=1
+                    else:
+                        flag1 = False
+                if( x-i >= 0):                
+                    if(matrix[x-i,y] == 1 and flag2):
+                        sum +=1
+                    else:
+                        flag2 = False
         if sum > 4 : 
             return False
 
@@ -590,8 +309,8 @@ class battleShip:
         
         self.population.append(myDic)
         self.sortPopulation()
-        # if(len(self.population) > 2*self.populationCounts):
-        #     self.population = self.population[:self.n-1]
+        if(len(self.population) > 2*self.populationCounts):
+            self.population = self.population[:self.n-1]
         
         if(matMin == 0):
             print("answer is :")
@@ -818,7 +537,7 @@ def main():
     # row = [3, 1, 4, 1, 2, 30, 0, 5, 2, 4, 1, 25, 2, 4, 12, 4, 2, 24, 10, 17, 21, 4, 1, 23, 3, 1, 4, 11, 2, 3, 0, 5, 3, 1, 34, 1, 2, 3, 0, 5, 2, 4, 1, 1, 2, 4, 1, 4, 2, 4, 1, 1, 2, 4, 1, 4, 3, 1, 4, 1, 2, 3, 0, 5,]
     # print(sum(row))
     # print(sum(row)==sum(col))
-    # populationCounts = 10
+    # populationCounts = 100
     # bs = battleShip(64, col, row, populationCounts,mutationRate)
 
     
@@ -844,10 +563,15 @@ def main():
         anim.event_source.stop()
 
         print("answer is :")
+        print('matrix: ')
         print(bs.population[0]['matrix'])
+        print('row: ')
         print(bs.population[0]['row'])
+        print('rowSum: ')
         print(bs.population[0]['rowSum'])
+        print('col: ')
         print(bs.population[0]['col'])
+        print('colSum: ')
         print(bs.population[0]['colSum'])
         # print(matrixP)
     def unpause(e ):
