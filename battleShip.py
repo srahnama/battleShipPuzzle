@@ -478,7 +478,7 @@ class battleShip:
 
 # from tkinter import *
 
-def main():
+def main(n=0,row=[],col=[],populationCounts=0):
     # a=np.array([[0., 0., 0., 1., 0., 0., 1., 0.],
     #    [0., 1., 0., 0., 0., 0., 0., 0.],
     #    [0., 0., 0., 0., 1., 1., 1., 1.],
@@ -517,29 +517,30 @@ def main():
     #             frame1.grid(row=i, column=j)
 
     
-    
-
-
     mutationRate = 3
-    # col = [1,2,1,3,2,2,3,1,5,0]
-    # row = [3,2,2,4,2,1,1,2,3,0]
-    # populationCounts = 1000
-    # bs = battleShip(10, col, row, populationCounts , mutationRate)
-   
-    col = [2, 4, 1, 1, 2, 4, 1, 4]
-    row = [3, 1, 4, 1, 2, 3, 0, 5]
-    populationCounts = 100
-    bs = battleShip(8, col, row, populationCounts, mutationRate)
+    if(n==0):
 
-
+        
+        # col = [1,2,1,3,2,2,3,1,5,0]
+        # row = [3,2,2,4,2,1,1,2,3,0]
+        # populationCounts = 1000
+        # bs = battleShip(10, col, row, populationCounts , mutationRate)
     
-    # col = [2, 4, 17, 12, 2, 4, 25, 4, 30, 1, 4, 1, 2, 3, 0, 5, 21, 4, 10, 1, 2, 24, 11, 4, 3, 1, 23, 1, 2, 3, 0, 5,3, 1, 4, 1, 2, 3, 0, 5, 2, 34, 1, 1, 2, 4, 1, 4, 2, 4, 1, 1, 2, 4, 1, 4, 3, 1, 4, 1, 2, 3, 0, 5,]
-    # row = [3, 1, 4, 1, 2, 30, 0, 5, 2, 4, 1, 25, 2, 4, 12, 4, 2, 24, 10, 17, 21, 4, 1, 23, 3, 1, 4, 11, 2, 3, 0, 5, 3, 1, 34, 1, 2, 3, 0, 5, 2, 4, 1, 1, 2, 4, 1, 4, 2, 4, 1, 1, 2, 4, 1, 4, 3, 1, 4, 1, 2, 3, 0, 5,]
-    # print(sum(row))
-    # print(sum(row)==sum(col))
-    # populationCounts = 100
-    # bs = battleShip(64, col, row, populationCounts,mutationRate)
+        col = [2, 4, 1, 1, 2, 4, 1, 4]
+        row = [3, 1, 4, 1, 2, 3, 0, 5]
+        populationCounts = 50
+        bs = battleShip(8, col, row, populationCounts, mutationRate)
 
+
+        
+        # col = [2, 4, 17, 12, 2, 4, 25, 4, 30, 1, 4, 1, 2, 3, 0, 5, 21, 4, 10, 1, 2, 24, 11, 4, 3, 1, 23, 1, 2, 3, 0, 5,3, 1, 4, 1, 2, 3, 0, 5, 2, 34, 1, 1, 2, 4, 1, 4, 2, 4, 1, 1, 2, 4, 1, 4, 3, 1, 4, 1, 2, 3, 0, 5,]
+        # row = [3, 1, 4, 1, 2, 30, 0, 5, 2, 4, 1, 25, 2, 4, 12, 4, 2, 24, 10, 17, 21, 4, 1, 23, 3, 1, 4, 11, 2, 3, 0, 5, 3, 1, 34, 1, 2, 3, 0, 5, 2, 4, 1, 1, 2, 4, 1, 4, 2, 4, 1, 1, 2, 4, 1, 4, 3, 1, 4, 1, 2, 3, 0, 5,]
+        # print(sum(row))
+        # print(sum(row)==sum(col))
+        # populationCounts = 100
+        # bs = battleShip(64, col, row, populationCounts,mutationRate)
+    else:
+        bs = battleShip(n, col, row, populationCounts, mutationRate)
     
     bs.makePopulation()
     # bs.fitness()
