@@ -296,7 +296,13 @@ class battleShip:
             matrixP[(int)(len(matrix)/2),:] = np.zeros((len(matrix)))
             matrix[(int)((len(matrix)/2)+1):,:] = matrix1[((int)(len(matrix2)/2)+1):][:]
             matrixP[(int)((len(matrix)/2)+1):,:] = matrix1p[((int)(len(matrix2)/2)+1):][:]
-
+        
+        
+        # for i in range(0, self.n-1):
+        #     for j in range(0, self.n-1):
+        #         if(matrix1[i, j] == matrix2[i, j]):
+        #             matrix[i, j] = 0
+        #             matrixP[i, j] = 0
         matrix, matrixP = self.crossOver(matrix, matrixP)
      
             
