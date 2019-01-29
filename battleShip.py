@@ -242,7 +242,7 @@ class battleShip:
     def sortPopulation(self):
         self.population = sorted(
             self.population, key=lambda x: x['colSum'] + x['rowSum'])
-        # i = (np.random.choice(10, 1)-1)[0]
+        i = (np.random.choice(5, 1)-1)[0]
         # j = (np.random.choice(5, 1)-1)[0]
         j = (np.random.choice(len(self.population), 1)-1)[0]
         min1 = self.population[0]
@@ -451,6 +451,7 @@ class battleShip:
                     matrix[x,y] = 0
                     matrixP[x,y] = 0
         matrix, matrixP, ok = self.addOnes(matrix, matrixP)
+        matrix, matrixP = self.mutation(matrix, matrixP)
         # if(matrix[(int)(len(matrix)/2),:].sum()>0):
         #     print(matrix)
         # if random.randint(0,100) < self.mutationRate:
@@ -471,6 +472,31 @@ class battleShip:
         # #     matrixP = matrixP[::-1]
 
         # print(matrix.sum())
+        
+        return matrix, matrixP
+
+    def mutation(self, matrix, matrixP):
+        if random.randint(0,100) < self.mutationRate:
+            # while(True):
+            #     x = (np.random.choice(self.n, 1)-1)[0]
+            #     y = (np.random.choice(self.n, 1)-1)[0]
+                
+            #     if(matrix[x, y] == 1):
+            #         matrix[x, y] = 0
+            #         matrixP[x, y] = 0
+            #         matrix, matrixP, ok = self.addOnes(matrix, matrixP)
+            #         break
+                
+            # print('mat',matrixP)
+            matrix = np.fliplr(matrix)
+
+            matrixP = np.fliplr(matrixP)
+            # print('matfliplr',matrixP)
+
+        # #     matrix = matrix[::-1]
+        # #     matrixP = matrixP[::-1]
+
+        # print(matrix.sum())
         return matrix, matrixP
 
    
@@ -478,7 +504,7 @@ class battleShip:
 
 # from tkinter import *
 
-def main(n=0,row=[],col=[],populationCounts=0):
+def main(n=0,row=[],col=[],populationCounts=0,mutationRate = 3):
     # a=np.array([[0., 0., 0., 1., 0., 0., 1., 0.],
     #    [0., 1., 0., 0., 0., 0., 0., 0.],
     #    [0., 0., 0., 0., 1., 1., 1., 1.],
@@ -517,7 +543,7 @@ def main(n=0,row=[],col=[],populationCounts=0):
     #             frame1.grid(row=i, column=j)
 
     
-    mutationRate = 3
+    
     if(n==0):
 
         
