@@ -578,8 +578,8 @@ def main(n=0,row=[],col=[],populationCounts=0):
     def unpause(e ):
         anim.event_source.start()
 
-        print("answer is :")
-        print(bs.population[0]['matrix'])
+        # print("answer is :")
+        # print(bs.population[0]['matrix'])
         # print(matrixP)
     anim = animation.FuncAnimation(fig, fit)
     axpause = plt.axes([0.7, 0.05, 0.1, 0.075])

@@ -1,13 +1,13 @@
 from tkinter import *
 import battleShip
 window = Tk()
-window.title("String Matcher ")
-window.geometry('500x500') 
-lbl = Label(window, text="String Matcher", font=("Arial Bold", 20)).grid(column=0,row=0)
-tt=Label(window, text="size NXN:",font=("Arial",10)).grid(column=0,row=2)
-ttt=Label(window, text="row[]:",font=("Arial", 10)).grid(column=0,row=3)
-tttt=Label(window, text="column[]:",font=("Arial", 10)).grid(column=0,row=4)
-ttttt=Label(window, text="population count:",font=("Arial", 10)).grid(column=0,row=5)
+window.title("BattleShipPuzzle")
+window.geometry('400x200') 
+lbl = Label(window, text="BattleShipPuzzle", font=("Arial Bold", 15)).grid(column=1,row=0)
+tt=Label(window, text="Size (NXN):",font=("Arial",10)).grid(column=0,row=2)
+ttt=Label(window, text="Row[2,5,0,...]:",font=("Arial", 10)).grid(column=0,row=3)
+tttt=Label(window, text="Column[2,5,3,...]:",font=("Arial", 10)).grid(column=0,row=4)
+ttttt=Label(window, text="Population Size:",font=("Arial", 10)).grid(column=0,row=5)
 txt = Entry(window,width=30)
 txt.grid(column=1, row=2)
     
