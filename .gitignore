@@ -1,4 +1,4 @@
 test.py
-dist/**/*
-buld/**/*
-__pycache__/**/*
+dist/
+buld/
+__pycache__/
