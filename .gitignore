@@ -1,1 +1,4 @@
 test.py
+/dist
+/buld
+/__pycache__
