@@ -23,6 +23,8 @@ then click start
 
 for see best result you must click on pause then out put will be show in terminal after that you can start to find better result.
 
+## An instance of answer for 10X10 
+![alt_text](https://github.com/srahnama/battleShipPuzzle/blob/master/10x10.png)
 
 ## License
 
