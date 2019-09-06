@@ -2,6 +2,12 @@
 
 The Battleship puzzle (sometimes called Bimaru, Yubotu, Solitaire Battleships or Battleship Solitaire) is a logic puzzle based on the Battleship guessing game.
 
+## Prerequisites
+
+* python
+* matplotlib
+* pip
+* tkinter
 
 
 ### Run
@@ -29,12 +35,5 @@ for see best result you must click on pause then out put will be show in termina
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
-
-## Acknowledgments
-
-* python
-* matplotlib
-* pip
-* tkinter
 
 by : [Shahab Rahnama](http://srahnama.ir/)
